@@ -1,2 +1,2 @@
-# gaviar
-Resources for Gaviar Handheld
+# Gaviar Handheld
+This repository contains all resources related to the Gaviar handheld during the development stage. It may be deleted once development is complete. Please fork this repository if you need to keep a copy for future reference. Thank you!  

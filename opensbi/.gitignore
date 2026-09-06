@@ -22,3 +22,4 @@ brom.bin
 fw_jump.bin
 fw_payload.bin
 payload/*
+run.sh

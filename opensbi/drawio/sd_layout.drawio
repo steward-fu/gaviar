@@ -1,0 +1,73 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="第 1 页" id="VT1iLX0y2dAhEQSoWT6g">
+    <mxGraphModel dx="1400" dy="750" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="l-eBBJOTwlcPwmJ_g-fy-1" parent="1" style="shape=image;html=1;verticalAlign=top;verticalLabelPosition=bottom;labelBackgroundColor=#ffffff;imageAspect=0;aspect=fixed;image=https://icons.diagrams.net/assets/font-awesome/1/Sd_Card.svg;fontSize=12;fontStyle=1" value="MicroSD" vertex="1">
+          <mxGeometry height="70" width="52.5" x="80" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="l-eBBJOTwlcPwmJ_g-fy-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#0000FF;" value="Head (預留16MB)" vertex="1">
+          <mxGeometry height="40" width="170" x="210" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="l-eBBJOTwlcPwmJ_g-fy-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;fontStyle=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="Table" vertex="1">
+          <mxGeometry height="50" width="170" x="210" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="l-eBBJOTwlcPwmJ_g-fy-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;fontStyle=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Files and Dirs" vertex="1">
+          <mxGeometry height="210" width="170" x="210" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="l-eBBJOTwlcPwmJ_g-fy-6" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;fontSize=16;fontStyle=1" value="FAT32" vertex="1">
+          <mxGeometry height="30" width="60" x="210" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="l-eBBJOTwlcPwmJ_g-fy-7" edge="1" parent="1" source="l-eBBJOTwlcPwmJ_g-fy-1" style="endArrow=none;html=1;rounded=0;entryX=0;entryY=0;entryDx=0;entryDy=0;exitX=1;exitY=0;exitDx=0;exitDy=0;strokeWidth=2;" target="l-eBBJOTwlcPwmJ_g-fy-2" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="400" y="410" as="sourcePoint" />
+            <mxPoint x="450" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l-eBBJOTwlcPwmJ_g-fy-8" edge="1" parent="1" source="l-eBBJOTwlcPwmJ_g-fy-5" style="endArrow=none;html=1;rounded=0;entryX=1;entryY=1;entryDx=0;entryDy=0;exitX=0;exitY=1;exitDx=0;exitDy=0;strokeWidth=2;" target="l-eBBJOTwlcPwmJ_g-fy-1" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="400" y="410" as="sourcePoint" />
+            <mxPoint x="450" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l-eBBJOTwlcPwmJ_g-fy-9" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="fw_jump.bin" vertex="1">
+          <mxGeometry height="40" width="140" x="490" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="l-eBBJOTwlcPwmJ_g-fy-10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="fw_jump.bin" vertex="1">
+          <mxGeometry height="40" width="140" x="490" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="l-eBBJOTwlcPwmJ_g-fy-11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="dtb" vertex="1">
+          <mxGeometry height="40" width="140" x="490" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="l-eBBJOTwlcPwmJ_g-fy-12" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontSize=16;fontStyle=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="Image" vertex="1">
+          <mxGeometry height="40" width="140" x="490" y="260" as="geometry" />
+        </mxCell>
+        <mxCell id="l-eBBJOTwlcPwmJ_g-fy-13" edge="1" parent="1" source="l-eBBJOTwlcPwmJ_g-fy-9" style="endArrow=none;html=1;rounded=0;entryX=1;entryY=0;entryDx=0;entryDy=0;exitX=0;exitY=0;exitDx=0;exitDy=0;strokeWidth=2;" target="l-eBBJOTwlcPwmJ_g-fy-2" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="400" y="410" as="sourcePoint" />
+            <mxPoint x="450" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l-eBBJOTwlcPwmJ_g-fy-14" edge="1" parent="1" source="l-eBBJOTwlcPwmJ_g-fy-12" style="endArrow=none;html=1;rounded=0;entryX=1;entryY=1;entryDx=0;entryDy=0;exitX=0;exitY=1;exitDx=0;exitDy=0;strokeWidth=2;" target="l-eBBJOTwlcPwmJ_g-fy-2" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="400" y="410" as="sourcePoint" />
+            <mxPoint x="450" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="l-eBBJOTwlcPwmJ_g-fy-15" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=16;fontColor=#FF0000;" value="8KB 位置" vertex="1">
+          <mxGeometry height="30" width="120" x="640" y="145" as="geometry" />
+        </mxCell>
+        <mxCell id="l-eBBJOTwlcPwmJ_g-fy-16" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=16;fontColor=#FF0000;" value="40KB 位置" vertex="1">
+          <mxGeometry height="30" width="120" x="640" y="185" as="geometry" />
+        </mxCell>
+        <mxCell id="l-eBBJOTwlcPwmJ_g-fy-17" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=16;fontColor=#FF0000;" value="300KB 位置" vertex="1">
+          <mxGeometry height="30" width="120" x="640" y="225" as="geometry" />
+        </mxCell>
+        <mxCell id="l-eBBJOTwlcPwmJ_g-fy-18" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;fontSize=16;fontColor=#FF0000;" value="400KB 位置" vertex="1">
+          <mxGeometry height="30" width="120" x="640" y="265" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

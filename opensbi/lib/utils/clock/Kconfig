@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
+menu "Clock Support"
+
+config CLOCK_F133
+	bool "F133 clock support"
+	default n
+
+endmenu

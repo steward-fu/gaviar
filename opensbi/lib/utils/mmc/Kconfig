@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
+menu "MMC Support"
+
+config MMC_F133
+	bool "F133 mmc support"
+	default n
+
+endmenu

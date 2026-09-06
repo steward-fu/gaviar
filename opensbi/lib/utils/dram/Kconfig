@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
+menu "DRAM Support"
+
+config DRAM_F133
+	bool "F133 dram support"
+	default n
+
+endmenu

@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
+menu "LED Support"
+
+config LED_F133
+	bool "F133 led support"
+	default n
+
+endmenu

@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
+config PLATFORM_F133
+	bool
+	select LED_F133
+	select MMC_F133
+	select DRAM_F133
+	select CLOCK_F133
+	select SERIAL_F133_UART
+	select DISPLAY_F133_SLCD
+	default y

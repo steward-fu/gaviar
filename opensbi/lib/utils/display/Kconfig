@@ -1,0 +1,9 @@
+# SPDX-License-Identifier: BSD-2-Clause
+
+menu "Display Support"
+
+config DISPLAY_F133_SLCD
+	bool "F133 slcd support"
+	default n
+
+endmenu

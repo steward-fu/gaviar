@@ -67,7 +67,7 @@ static int sbi_ecall_legacy_handler(unsigned long extid, unsigned long funcid,
         /* Added by Steward for Gaviar handheld */
         void f133_slcd_putc(char ch);
         f133_slcd_putc(regs->a0);
-#endf
+#endif
 		break;
 	case SBI_EXT_0_1_CONSOLE_GETCHAR:
 		ret = sbi_getc();

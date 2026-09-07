@@ -50,9 +50,9 @@
     .long 0, 0, 0, 0, 0, 0, 0, 0
 
 _gaviar:
-    li a0, 0x20000
+    li a0, F133_TAG_ADR
     lw a1, 0(a0)
-    li a2, F133_TAG
+    li a2, F133_TAG_KEY
     beq a1, a2, _start
 
     /* disable interrupt */
@@ -73,8 +73,8 @@ _gaviar:
     jal f133_mmc_init
     jal f133_mmc_reload
 
-    li a0, 0x20000
-    li a1, F133_TAG
+    li a0, F133_TAG_ADR
+    li a1, F133_TAG_KEY
     sw a1, 0(a0)
 
     li a0, OPENSBI_BASE

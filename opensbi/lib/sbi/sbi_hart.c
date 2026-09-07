@@ -951,6 +951,11 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 	unsigned long val;
 #endif
 
+    /* Hacked by steward for Gaviar handheld */
+    arg1 = DTB_BASE;
+    next_mode = PRV_S;
+    next_addr = KERNEL_BASE;
+
 	switch (next_mode) {
 	case PRV_M:
 		break;
@@ -982,13 +987,6 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 	csr_write(CSR_MSTATUS, val);
 	csr_write(CSR_MEPC, next_addr);
 
-    /* Hacked by steward for Gaviar handheld */
-    next_addr = 0x40008000UL;
-    arg1 = 0x41500000UL;
-    next_mode = PRV_S;
-    csr_write(CSR_MEPC, next_addr);
-    sbi_printf("Jump to kernel (0x%lx) ...", next_addr);
-
 	if (next_mode == PRV_S) {
 		csr_write(CSR_STVEC, next_addr);
 		csr_write(CSR_SSCRATCH, 0);
@@ -1001,6 +999,7 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 			csr_write(CSR_UIE, 0);
 		}
 	}
+    sbi_printf("Jump to 0x%lx (DTB 0x%lx)", next_addr, arg1);
 
 	register unsigned long a0 asm("a0") = arg0;
 	register unsigned long a1 asm("a1") = arg1;

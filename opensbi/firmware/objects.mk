@@ -25,8 +25,12 @@ firmware-cflags-y   +=	-fPIE -pie
 firmware-ldflags-y  +=	-Wl,--no-dynamic-linker -Wl,-pie
 endif
 
-ifdef F133_TAG
-firmware-genflags-y += -DF133_TAG=$(F133_TAG)
+ifdef F133_TAG_KEY
+firmware-genflags-y += -DF133_TAG_KEY=$(F133_TAG_KEY)
+endif
+
+ifdef F133_TAG_ADR
+firmware-genflags-y += -DF133_TAG_ADR=$(F133_TAG_ADR)
 endif
 
 ifdef F133_SRAM

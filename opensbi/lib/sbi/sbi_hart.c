@@ -999,7 +999,7 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 			csr_write(CSR_UIE, 0);
 		}
 	}
-    sbi_printf("Jump to 0x%lx (DTB 0x%lx)", next_addr, arg1);
+    sbi_printf("Jump to 0x%lx (DTB 0x%lx)\n\n", next_addr, arg1);
 
 	register unsigned long a0 asm("a0") = arg0;
 	register unsigned long a1 asm("a1") = arg1;

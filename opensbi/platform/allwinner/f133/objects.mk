@@ -15,28 +15,25 @@ platform-objs-y     += platform.o
 F133_TAG_KEY         = 0x55AA55AA
 F133_TAG_ADR         = 0x20000
 
-# LBA = 300KB
-# SIZE = 64KB
-DTB_LBA              = 600
-DTB_BASE             = 0x41500000
-DTB_SIZE             = 0x10000
-
 # LBA = 400KB
-# SIZE = 8MB
 KERNEL_LBA           = 800
-KERNEL_BASE          = 0x40008000
+KERNEL_BASE          = 0x40000000
 KERNEL_SIZE          = 0xc00000
 
+# LBA = 300KB
+DTB_LBA              = 600
+DTB_BASE             = 0x40d00000
+DTB_SIZE             = 0x10000
+
 # LBA = 8KB + 32KB(BROM) = 40KB
-# SIZE = 256KB
 OPENSBI_LBA          = 80
-OPENSBI_BASE         = 0x41000000
+OPENSBI_BASE         = 0x40e00000
 OPENSBI_SIZE         = 0x40000
 
 ifeq ($(CONFIG),BROM)
     FW_TEXT_START    = 0x20000
 else
-    FW_TEXT_START    = 0x41000000
+    FW_TEXT_START    = $(OPENSBI_BASE)
 endif
 
 FW_JUMP              = y

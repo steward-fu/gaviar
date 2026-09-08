@@ -28,7 +28,4 @@ $ python3 scripts/gen_checksum.py ./build/platform/allwinner/f133/firmware/fw_pa
 
 $ sudo dd if=payload/brom.bin    of=/dev/sdX bs=1024 seek=8
 $ sudo dd if=payload/fw_jump.bin of=/dev/sdX bs=1024 seek=40
-
-$ sudo dd if=dtb   of=/dev/sdX bs=1024 seek=300
-$ sudo dd if=Image of=/dev/sdX bs=1024 seek=400
 ```

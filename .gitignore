@@ -1,1 +1,4 @@
+opensbi/run.sh
 opensbi/payload/*
+
+kernel/run.sh

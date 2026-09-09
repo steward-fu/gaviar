@@ -1,5 +1,7 @@
 # Kernel
-This kernel is based on Tina-Linux and has been extensively modified to meet the requirements of the Gaviar handheld.
+This kernel is based on Tina-Linux and has been extensively modified to meet the requirements of the Gaviar handheld.  
+
+![Alternative text for screen readers](image/1.jpg)  
 
 &nbsp;
 

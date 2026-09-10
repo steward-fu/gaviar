@@ -1,0 +1,22 @@
+config BSP_USING_DIRECT_UART
+    bool "Using Direct UART without driver"
+    default y
+
+config BSP_DRV_UART
+    bool "Enabel UART driver"
+    select RT_USING_SERIAL
+    default y
+
+if BSP_DRV_UART
+    config RT_USING_UART0
+        bool "Enabel UART 0"
+        default y
+
+    config RT_USING_UART1
+        bool "Enabel UART 1"
+        default n
+endif
+
+config BSP_DRV_AHCI
+    bool "Enabel AHCI disk driver"
+    default y

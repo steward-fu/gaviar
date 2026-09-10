@@ -1,0 +1,14 @@
+menu "Platform Driver Configuration"
+
+menu "Select UART Driver"
+    if RT_USING_SERIAL
+        config BSP_USING_UART1
+            bool "Enable UART1"
+            default y
+        config BSP_USING_UART2
+            bool "Enable UART2"
+            default n
+    endif
+endmenu
+
+endmenu

@@ -1,0 +1,40 @@
+{
+    "env": {
+        "windows": {
+            "VENV_MODE": true,
+            "PATH": "%PATH%;%RTT_EXEC_PATH%"
+        },
+        "linux": {
+            "PATH": "$PATH:$RTT_EXEC_PATH"
+        }
+    },
+    "statusBarItem": {
+        "build": {
+            "icon": "$(zap)",
+            "enable": true,
+            "commands": [
+                "scons -j 8"
+            ],
+            "label": "编译",
+            "tooltip": "编译内核"
+        },
+        "clean": {
+            "icon": "$(clear-all)",
+            "enable": true,
+            "commands": [
+                "scons -c"
+            ],
+            "label": "清理",
+            "tooltip": "清理内核"
+        },
+        "refresh": {
+            "icon": "$(sync)",
+            "enable": true,
+            "commands": [
+                "scons --target=vsc -s"
+            ],
+            "label": "刷新",
+            "tooltip": "刷新vscode配置"
+        }
+    }
+}

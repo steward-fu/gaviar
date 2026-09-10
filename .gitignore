@@ -2,5 +2,6 @@ opensbi/run.sh
 opensbi/payload/*
 
 kernel/run.sh
+kernel/arch/riscv/boot/Image
 
 rt-thread/rt-thread/bsp/allwinner/d1s/__pycache__

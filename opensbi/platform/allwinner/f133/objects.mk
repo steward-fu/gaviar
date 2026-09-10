@@ -22,12 +22,12 @@ KERNEL_SIZE          = 0xc00000
 
 # LBA = 300KB
 DTB_LBA              = 600
-DTB_BASE             = 0x40d00000
+DTB_BASE             = 0x43d00000
 DTB_SIZE             = 0x10000
 
 # LBA = 8KB + 32KB(BROM) = 40KB
 OPENSBI_LBA          = 80
-OPENSBI_BASE         = 0x40e00000
+OPENSBI_BASE         = 0x43e00000
 OPENSBI_SIZE         = 0x40000
 
 ifeq ($(CONFIG),BROM)

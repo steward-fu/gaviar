@@ -951,10 +951,9 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 	unsigned long val;
 #endif
 
-    /* Hacked by steward for Gaviar handheld */
-    arg1 = DTB_BASE;
-    next_mode = PRV_S;
-    next_addr = KERNEL_BASE;
+    // Fixed by Steward for Gaviar handheld.
+    // We need enable the access permission for PLIC before starts kernel.
+    *(volatile uint32_t *)0x101ffffc = 1;
 
 	switch (next_mode) {
 	case PRV_M:
@@ -999,7 +998,7 @@ sbi_hart_switch_mode(unsigned long arg0, unsigned long arg1,
 			csr_write(CSR_UIE, 0);
 		}
 	}
-    sbi_printf("Jump to 0x%lx (DTB 0x%lx)\n\n", next_addr, arg1);
+    sbi_printf("Jump to 0x%lx(0x%lx, 0x%lx)\n\n", next_addr, arg0, arg1);
 
 	register unsigned long a0 asm("a0") = arg0;
 	register unsigned long a1 asm("a1") = arg1;

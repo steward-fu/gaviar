@@ -1,0 +1,31 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="第 1 页" id="Kv0tWX_3LhMnx-A1b1Wn">
+    <mxGraphModel dx="1400" dy="750" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="oQLBelCh6AZyOwHRViSX-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=16;fontStyle=1" value="Kernel (12MB)" vertex="1">
+          <mxGeometry height="40" width="170" x="320" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="oQLBelCh6AZyOwHRViSX-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=16;fontStyle=1" value="Usable RAM" vertex="1">
+          <mxGeometry height="160" width="170" x="320" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="oQLBelCh6AZyOwHRViSX-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=16;fontStyle=1" value="DTB (64KB)" vertex="1">
+          <mxGeometry height="40" width="170" x="320" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="oQLBelCh6AZyOwHRViSX-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=16;fontStyle=1" value="OpenSBI (512KB)" vertex="1">
+          <mxGeometry height="40" width="170" x="320" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="oQLBelCh6AZyOwHRViSX-5" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=right;verticalAlign=middle;rounded=0;fontStyle=1;fontColor=#0000FF;" value="0x40000000" vertex="1">
+          <mxGeometry height="30" width="80" x="230" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="oQLBelCh6AZyOwHRViSX-6" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=right;verticalAlign=middle;rounded=0;fontStyle=1;fontColor=#0000FF;" value="0x43D00000" vertex="1">
+          <mxGeometry height="30" width="80" x="230" y="340" as="geometry" />
+        </mxCell>
+        <mxCell id="oQLBelCh6AZyOwHRViSX-7" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=right;verticalAlign=middle;rounded=0;fontStyle=1;fontColor=#0000FF;" value="0x43E00000" vertex="1">
+          <mxGeometry height="30" width="80" x="230" y="380" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

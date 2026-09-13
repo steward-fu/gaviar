@@ -1,9 +1,4 @@
-/*
- * Allwinner Technology CO., Ltd. sun20iw1p1 platform.
- *
- */
-
-/memreserve/ 0x41fc0000 0x020000;  /* opensbi */
+/memreserve/ 0x41fc0000 0x020000;
 
 #include <dt-bindings/clock/sun8iw20-ccu.h>
 #include <dt-bindings/clock/sun8iw20-r-ccu.h>
@@ -16,261 +11,235 @@
 #include <dt-bindings/thermal/thermal.h>
 
 / {
-  model = "sun20iw1p1";
-  compatible = "allwinner,sun20iw1p1";
-  #address-cells = <2>;
-  #size-cells = <2>;
+    model = "sun20iw1p1";
+    compatible = "allwinner,sun20iw1p1";
+    #address-cells = <2>;
+    #size-cells = <2>;
 
-  aliases {
-    serial0 = &uart0;
-    serial1 = &uart1;
-    serial2 = &uart2;
-    serial3 = &uart3;
-    serial4 = &uart4;
-    serial5 = &uart5;
-    spi0 = &spi0;
-    spi1 = &spi1;
-    twi0 = &twi0;
-    twi1 = &twi1;
-    twi2 = &twi2;
-    twi3 = &twi3;
-    mmc2 = &sdc2;
-    pwm0 = &pwm0;
-    pwm1 = &pwm1;
-    pwm2 = &pwm2;
-    pwm3 = &pwm3;
-    pwm4 = &pwm4;
-    pwm5 = &pwm5;
-    pwm6 = &pwm6;
-    pwm7 = &pwm7;
-    ir0 = &s_cir0;
-    ir1 = &ir1;
-    mmc0 = &sdc0;
-    ve0 = &ve;
-    tvd = &tvd;
-    tvd0 = &tvd0;
-  };
-
-  chosen {
-    bootargs = "console=ttyS4,115200n8 debug loglevel=7,initcall_debug=1 init=/init earlycon=sbi";
-    stdout-path = "serial4:115200n8";
-    linux,initrd-start = <0x42000000>;
-    linux,initrd-end = <0x43000000>;
-  };
-
-  cpus {
-    #address-cells = <1>;
-    #size-cells = <0>;
-    timebase-frequency = <24000000>;
-
-    idle-states {
-      CPU_SLEEP: cpu-sleep {
-        compatible = "riscv,idle-state";
-        local-timer-stop;
-        entry-latency-us = <59>;
-        exit-latency-us = <59>;
-        min-residency-us = <5000>;
-      };
+    aliases {
+        serial0 = &uart0;
+        serial1 = &uart1;
+        serial2 = &uart2;
+        serial3 = &uart3;
+        serial4 = &uart4;
+        serial5 = &uart5;
+        spi0 = &spi0;
+        spi1 = &spi1;
+        twi0 = &twi0;
+        twi1 = &twi1;
+        twi2 = &twi2;
+        twi3 = &twi3;
+        pwm0 = &pwm0;
+        pwm1 = &pwm1;
+        pwm2 = &pwm2;
+        pwm3 = &pwm3;
+        pwm4 = &pwm4;
+        pwm5 = &pwm5;
+        pwm6 = &pwm6;
+        pwm7 = &pwm7;
+        ir0 = &s_cir0;
+        ir1 = &ir1;
+        mmc0 = &sdc0;
+        ve0 = &ve;
+        tvd = &tvd;
+        tvd0 = &tvd0;
     };
 
-    CPU0: cpu@0 {
-      device_type = "cpu";
-      reg = <0>;
-      status = "okay";
-      compatible = "riscv";
-      riscv,isa = "rv64imafdcvsu";
+    cpus {
+        #address-cells = <1>;
+        #size-cells = <0>;
+        timebase-frequency = <24000000>;
 
-      /*	riscv,priv-major = <1>;*/
-      /*	riscv,priv-minor = <10>;*/
-      mmu-type = "riscv,sv39";
-      clocks = <&ccu CLK_RISCV>;
-      clock-frequency = <24000000>;
-      operating-points-v2 = <&cpu_opp_table>;
-      cpu-idle-states = <&CPU_SLEEP>;
-      #cooling-cells = <2>;
-
-      /*		d-cache-size = <0x8000>;*/
-      /*		d-cache-line-size = <32>;*/
-      CPU0_intc: interrupt-controller {
-        #interrupt-cells = <1>;
-        interrupt-controller;
-        compatible = "riscv,cpu-intc";
-      };
-    };
-  };
-
-  dram: dram {
-    device_type = "dram";
-    compatible = "allwinner,dram";
-    clocks = <&ccu CLK_PLL_DDR0>;
-    clock-names = "pll_ddr";
-  };
-
-  memory@40000000 {
-    device_type = "memory";
-    reg = <0x0 0x40000000 0x0 0x8000000>;
-  };
-
-  dump_reg: dump_reg@20000 {
-    compatible = "allwinner,sunxi-dump-reg";
-    reg = <0x0 0x00020000 0x0 0x0004>;
-
-    /* 0x00020000: dump_reg test addr, 0x0004: dump_reg test size */
-  };
-
-  cpu_opp_table: cpu-opp-table {
-    compatible = "allwinner,sun50i-operating-points";
-    nvmem-cells = <&speedbin_efuse>, <&cpubin_efuse>;
-    nvmem-cell-names = "speed", "bin";
-    opp-shared;
-
-    opp@480000000 {
-      opp-hz = <480000000>;
-      clock-latency-ns = <244144>;
-
-      /* 8 32k periods */
-      opp-microvolt-a0 = <900000>;
-      opp-microvolt-a1 = <900000>;
-      opp-microvolt-b0 = <950000>;
-      opp-microvolt-b1 = <950000>;
-      opp-microvolt-c0 = <950000>;
-      opp-microvolt-c1 = <950000>;
-      opp-supported-hw = <0x7>;
-    };
-
-    opp@600000000 {
-      opp-hz = <600000000>;
-      clock-latency-ns = <244144>;
-
-      /* 8 32k periods */
-      opp-microvolt-b0 = <950000>;
-      opp-microvolt-c0 = <950000>;
-      opp-microvolt-c1 = <950000>;
-      opp-supported-hw = <0x6>;
-    };
-
-    opp@720000000 {
-      opp-hz = <720000000>;
-      clock-latency-ns = <244144>;
-
-      /* 8 32k periods */
-      opp-microvolt-a0 = <950000>;
-      opp-microvolt-a1 = <900000>;
-      opp-microvolt-b0 = <950000>;
-      opp-microvolt-b1 = <950000>;
-      opp-microvolt-c0 = <950000>;
-      opp-microvolt-c1 = <950000>;
-      opp-supported-hw = <0x7>;
-    };
-
-    opp@816000000 {
-      opp-hz = <816000000>;
-      clock-latency-ns = <244144>;
-
-      /* 8 32k periods */
-      opp-microvolt-a0 = <1000000>;
-      opp-microvolt-a1 = <900000>;
-      opp-microvolt-b1 = <950000>;
-      opp-supported-hw = <0x1>;
-    };
-
-    opp@912000000 {
-      opp-hz = <912000000>;
-      clock-latency-ns = <244144>;
-
-      /* 8 32k periods */
-      opp-microvolt-a0 = <1050000>;
-      opp-microvolt-a1 = <900000>;
-      opp-microvolt-b1 = <950000>;
-      opp-microvolt-c1 = <950000>;
-      opp-supported-hw = <0x5>;
-    };
-
-    opp@1008000000 {
-      opp-hz = <1008000000>;
-      clock-latency-ns = <244144>;
-
-      /* 8 32k periods */
-      opp-microvolt-a0 = <1100000>;
-      opp-microvolt-a1 = <950000>;
-      opp-microvolt-b1 = <950000>;
-      opp-microvolt-c1 = <950000>;
-      opp-supported-hw = <0x5>;
-    };
-  };
-
-  dcxo24M: dcxo24M_clk {
-    #clock-cells = <0>;
-    compatible = "fixed-clock";
-    clock-frequency = <24000000>;
-    clock-output-names = "dcxo24M";
-  };
-
-  rc_16m: rc16m_clk {
-    #clock-cells = <0>;
-    compatible = "fixed-clock";
-    clock-frequency = <16000000>;
-    clock-accuracy = <300000000>;
-    clock-output-names = "rc-16m";
-  };
-
-  ext_32k: ext32k_clk {
-    #clock-cells = <0>;
-    compatible = "fixed-clock";
-    clock-frequency = <32768>;
-    clock-output-names = "ext-32k";
-  };
-
-  reg_pio1_8: pio-18 {
-    compatible = "regulator-fixed";
-    regulator-name = "pio-18";
-    regulator-min-microvolt = <1800000>;
-    regulator-max-microvolt = <1800000>;
-  };
-
-  reg_pio3_3: pio-33 {
-    compatible = "regulator-fixed";
-    regulator-name = "pio-33";
-    regulator-min-microvolt = <3300000>;
-    regulator-max-microvolt = <3300000>;
-  };
-
-  thermal-zones {
-    cpu_thermal_zone {
-      polling-delay-passive = <500>;
-      polling-delay = <1000>;
-      thermal-sensors = <&ths 0>;
-      sustainable-power = <1200>;
-
-      cpu_trips: trips {
-        cpu_threshold: trip-point@0 {
-          temperature = <70000>;
-          type = "passive";
-          hysteresis = <0>;
+        idle-states {
+            CPU_SLEEP: cpu-sleep {
+                compatible = "riscv,idle-state";
+                local-timer-stop;
+                entry-latency-us = <59>;
+                exit-latency-us = <59>;
+                min-residency-us = <5000>;
+            };
         };
 
-        cpu_target: trip-point@1 {
-          temperature = <90000>;
-          type = "passive";
-          hysteresis = <0>;
-        };
+        CPU0: cpu@0 {
+            device_type = "cpu";
+            reg = <0>;
+            status = "okay";
+            compatible = "riscv";
+            riscv,isa = "rv64imafdcvsu";
 
-        cpu_crit: cpu_crit@0 {
-          temperature = <110000>;
-          type = "critical";
-          hysteresis = <0>;
-        };
-      };
+            mmu-type = "riscv,sv39";
+            clocks = <&ccu CLK_RISCV>;
+            clock-frequency = <24000000>;
+            operating-points-v2 = <&cpu_opp_table>;
+            cpu-idle-states = <&CPU_SLEEP>;
+            #cooling-cells = <2>;
 
-      cooling-maps {
-        map0 {
-          trip = <&cpu_target>;
-          cooling-device = <&CPU0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-          contribution = <1024>;
+            CPU0_intc: interrupt-controller {
+                #interrupt-cells = <1>;
+                interrupt-controller;
+                compatible = "riscv,cpu-intc";
+            };
         };
-      };
     };
-  };
+
+    dram: dram {
+        device_type = "dram";
+        compatible = "allwinner,dram";
+        clocks = <&ccu CLK_PLL_DDR0>;
+        clock-names = "pll_ddr";
+    };
+
+    memory@40000000 {
+        device_type = "memory";
+        reg = <0x0 0x40000000 0x0 0x8000000>;
+    };
+
+    dump_reg: dump_reg@20000 {
+        compatible = "allwinner,sunxi-dump-reg";
+        reg = <0x0 0x00020000 0x0 0x0004>;
+    };
+
+    cpu_opp_table: cpu-opp-table {
+        compatible = "allwinner,sun50i-operating-points";
+        nvmem-cells = <&speedbin_efuse>, <&cpubin_efuse>;
+        nvmem-cell-names = "speed", "bin";
+        opp-shared;
+
+        opp@480000000 {
+            opp-hz = <480000000>;
+            clock-latency-ns = <244144>;
+            opp-microvolt-a0 = <900000>;
+            opp-microvolt-a1 = <900000>;
+            opp-microvolt-b0 = <950000>;
+            opp-microvolt-b1 = <950000>;
+            opp-microvolt-c0 = <950000>;
+            opp-microvolt-c1 = <950000>;
+            opp-supported-hw = <0x7>;
+        };
+
+        opp@600000000 {
+            opp-hz = <600000000>;
+            clock-latency-ns = <244144>;
+            opp-microvolt-b0 = <950000>;
+            opp-microvolt-c0 = <950000>;
+            opp-microvolt-c1 = <950000>;
+            opp-supported-hw = <0x6>;
+        };
+
+        opp@720000000 {
+            opp-hz = <720000000>;
+            clock-latency-ns = <244144>;
+            opp-microvolt-a0 = <950000>;
+            opp-microvolt-a1 = <900000>;
+            opp-microvolt-b0 = <950000>;
+            opp-microvolt-b1 = <950000>;
+            opp-microvolt-c0 = <950000>;
+            opp-microvolt-c1 = <950000>;
+            opp-supported-hw = <0x7>;
+        };
+
+        opp@816000000 {
+            opp-hz = <816000000>;
+            clock-latency-ns = <244144>;
+            opp-microvolt-a0 = <1000000>;
+            opp-microvolt-a1 = <900000>;
+            opp-microvolt-b1 = <950000>;
+            opp-supported-hw = <0x1>;
+        };
+
+        opp@912000000 {
+            opp-hz = <912000000>;
+            clock-latency-ns = <244144>;
+            opp-microvolt-a0 = <1050000>;
+            opp-microvolt-a1 = <900000>;
+            opp-microvolt-b1 = <950000>;
+            opp-microvolt-c1 = <950000>;
+            opp-supported-hw = <0x5>;
+        };
+
+        opp@1008000000 {
+            opp-hz = <1008000000>;
+            clock-latency-ns = <244144>;
+            opp-microvolt-a0 = <1100000>;
+            opp-microvolt-a1 = <950000>;
+            opp-microvolt-b1 = <950000>;
+            opp-microvolt-c1 = <950000>;
+            opp-supported-hw = <0x5>;
+        };
+    };
+
+    dcxo24M: dcxo24M_clk {
+        #clock-cells = <0>;
+        compatible = "fixed-clock";
+        clock-frequency = <24000000>;
+        clock-output-names = "dcxo24M";
+    };
+
+    rc_16m: rc16m_clk {
+        #clock-cells = <0>;
+        compatible = "fixed-clock";
+        clock-frequency = <16000000>;
+        clock-accuracy = <300000000>;
+        clock-output-names = "rc-16m";
+    };
+
+    ext_32k: ext32k_clk {
+        #clock-cells = <0>;
+        compatible = "fixed-clock";
+        clock-frequency = <32768>;
+        clock-output-names = "ext-32k";
+    };
+
+    reg_pio1_8: pio-18 {
+        compatible = "regulator-fixed";
+        regulator-name = "pio-18";
+        regulator-min-microvolt = <1800000>;
+        regulator-max-microvolt = <1800000>;
+    };
+
+    reg_pio3_3: pio-33 {
+        compatible = "regulator-fixed";
+        regulator-name = "pio-33";
+        regulator-min-microvolt = <3300000>;
+        regulator-max-microvolt = <3300000>;
+    };
+
+    thermal-zones {
+        cpu_thermal_zone {
+            polling-delay-passive = <500>;
+            polling-delay = <1000>;
+            thermal-sensors = <&ths 0>;
+            sustainable-power = <1200>;
+
+            cpu_trips: trips {
+                cpu_threshold: trip-point@0 {
+                    temperature = <70000>;
+                    type = "passive";
+                    hysteresis = <0>;
+                };
+
+                cpu_target: trip-point@1 {
+                    temperature = <90000>;
+                    type = "passive";
+                    hysteresis = <0>;
+                };
+
+                cpu_crit: cpu_crit@0 {
+                    temperature = <110000>;
+                    type = "critical";
+                    hysteresis = <0>;
+                };
+            };
+
+            cooling-maps {
+                map0 {
+                    trip = <&cpu_target>;
+                    cooling-device = <&CPU0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+                    contribution = <1024>;
+                };
+            };
+        };
+    };
 
   mmu_aw: iommu@2010000 {
     compatible = "allwinner,sunxi-iommu";
@@ -1307,67 +1276,6 @@
       status = "okay";
     };
 
-    sdc2: sdmmc@4022000 {
-      compatible = "allwinner,sunxi-mmc-v4p6x";
-      device_type = "sdc2";
-      reg = <0x0 0x04022000 0x0 0x1000>;
-      interrupts-extended = <&plic0 58 IRQ_TYPE_LEVEL_HIGH>;
-      clocks = <&dcxo24M>, <&ccu CLK_PLL_PERIPH0_2X>, <&ccu CLK_MMC2>, <&ccu CLK_BUS_MMC2>;
-      clock-names = "osc24m", "pll_periph", "mmc", "ahb";
-      resets = <&ccu RST_BUS_MMC2>;
-      reset-names = "rst";
-      pinctrl-names = "default", "sleep";
-      pinctrl-0 = <&sdc2_pins_a>;
-      pinctrl-1 = <&sdc2_pins_b>;
-      bus-width = <4>;
-      req-page-count = <2>;
-      cap-mmc-highspeed;
-      cap-cmd23;
-      mmc-cache-ctrl;
-      non-removable;
-
-      /*max-frequency = <200000000>;*/
-      max-frequency = <50000000>;
-      cap-erase;
-      mmc-high-capacity-erase-size;
-      no-sdio;
-      no-sd;
-
-      /*-- speed mode --*/
-      /*sm0: DS26_SDR12*/
-      /*sm1: HSSDR52_SDR25*/
-      /*sm2: HSDDR52_DDR50*/
-      /*sm3: HS200_SDR104*/
-      /*sm4: HS400*/
-      /*-- frequency point --*/
-      /*f0: CLK_400K*/
-      /*f1: CLK_25M*/
-      /*f2: CLK_50M*/
-      /*f3: CLK_100M*/
-      /*f4: CLK_150M*/
-      /*f5: CLK_200M*/
-      sdc_tm4_sm0_freq0 = <0>;
-      sdc_tm4_sm0_freq1 = <0>;
-      sdc_tm4_sm1_freq0 = <0x00000000>;
-      sdc_tm4_sm1_freq1 = <0>;
-      sdc_tm4_sm2_freq0 = <0x00000000>;
-      sdc_tm4_sm2_freq1 = <0>;
-      sdc_tm4_sm3_freq0 = <0x05000000>;
-      sdc_tm4_sm3_freq1 = <0x00000005>;
-      sdc_tm4_sm4_freq0 = <0x00050000>;
-      sdc_tm4_sm4_freq1 = <0x00000004>;
-      sdc_tm4_sm4_freq0_cmd = <0>;
-      sdc_tm4_sm4_freq1_cmd = <0>;
-
-      /*vmmc-supply = <&reg_3p3v>;*/
-      /*vqmc-supply = <&reg_3p3v>;*/
-      /*vdmc-supply = <&reg_3p3v>;*/
-      /*vmmc = "vcc-card";*/
-      /*vqmc = "";*/
-      /*vdmc = "";*/
-      /*sunxi-power-save-mode;*/
-    };
-
     sdc0: sdmmc@4020000 {
       compatible = "allwinner,sunxi-mmc-v5p3x";
       device_type = "sdc0";
@@ -1377,11 +1285,8 @@
       clock-names = "osc24m", "pll_periph", "mmc", "ahb";
       resets = <&ccu RST_BUS_MMC0>;
       reset-names = "rst";
-      pinctrl-names = "default", "mmc_1v8", "sleep", "uart_jtag";
+      pinctrl-names = "default";
       pinctrl-0 = <&sdc0_pins_a>;
-      pinctrl-1 = <&sdc0_pins_b>;
-      pinctrl-2 = <&sdc0_pins_c>;
-      pinctrl-3 = <&sdc0_pins_d &sdc0_pins_e>;
       max-frequency = <50000000>;
       bus-width = <4>;
       req-page-count = <2>;
@@ -1417,57 +1322,6 @@
       /*sunxi-dly-104M-ddr  = <1 0 0 0>;*/
       /*sunxi-dly-208M-ddr  = <1 0 0 0>;*/
       status = "okay";
-    };
-
-    sdc1: sdmmc@4021000 {
-      compatible = "allwinner,sunxi-mmc-v5p3x";
-      device_type = "sdc1";
-      reg = <0x0 0x04021000 0x0 0x1000>;
-      interrupts-extended = <&plic0 57 IRQ_TYPE_LEVEL_HIGH>;
-      clocks = <&dcxo24M>, <&ccu CLK_PLL_PERIPH0_2X>, <&ccu CLK_MMC1>, <&ccu CLK_BUS_MMC1>;
-      clock-names = "osc24m", "pll_periph", "mmc", "ahb";
-      resets = <&ccu RST_BUS_MMC1>;
-      reset-names = "rst";
-      pinctrl-names = "default", "sleep";
-      pinctrl-0 = <&sdc1_pins_a>;
-      pinctrl-1 = <&sdc1_pins_b>;
-      max-frequency = <50000000>;
-      bus-width = <4>;
-
-      /*broken-cd;*/
-      /*cd-inverted*/
-      /*cd-gpios = <&pio PG 6 6 1 2 0>;*/
-      /* vmmc-supply = <&reg_3p3v>;*/
-      /* vqmc-supply = <&reg_3p3v>;*/
-      /* vdmc-supply = <&reg_3p3v>;*/
-      /*vmmc = "vcc-card";*/
-      /*vqmc = "";*/
-      /*vdmc = "";*/
-      cap-sd-highspeed;
-      no-mmc;
-
-      /*sd-uhs-sdr50;*/
-      /*sd-uhs-ddr50;*/
-      /*sd-uhs-sdr104;*/
-      /*cap-sdio-irq;*/
-      keep-power-in-suspend;
-
-      /*ignore-pm-notify;*/
-      /*sunxi-power-save-mode;*/
-      /*sunxi-dly-400k = <1 0 0 0 0>; */
-      /*sunxi-dly-26M  = <1 0 0 0 0>;*/
-      /*sunxi-dly-52M  = <1 0 0 0 0>;*/
-      sunxi-dly-52M-ddr4 = <1 0 0 0 2>;
-
-      /*sunxi-dly-52M-ddr8  = <1 0 0 0 0>;*/
-      sunxi-dly-104M = <1 0 0 0 1>;
-
-      /*sunxi-dly-208M  = <1 1 0 0 0>;*/
-      sunxi-dly-208M = <1 0 0 0 1>;
-
-      /*sunxi-dly-104M-ddr  = <1 0 0 0 0>;*/
-      /*sunxi-dly-208M-ddr  = <1 0 0 0 0>;*/
-      status = "disabled";
     };
 
     hdmi: hdmi@5500000 {

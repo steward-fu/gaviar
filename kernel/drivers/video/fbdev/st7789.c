@@ -425,12 +425,12 @@ static void sunxi_iounmap(void)
 static int __init myfb_init(void)
 {
     sunxi_ioremap();
-	return platform_driver_register(&fb_driver);
+    return platform_driver_register(&fb_driver);
 }
 
 static void __exit myfb_cleanup(void)
 {
-	platform_driver_unregister(&fb_driver);
+    platform_driver_unregister(&fb_driver);
     sunxi_iounmap();
 }
 

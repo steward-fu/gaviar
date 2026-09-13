@@ -43,7 +43,7 @@ static struct ccu_mult pll_cpux_clk = {
 		.reg		= 0x000,
 		.hw.init	= CLK_HW_INIT("pll-cpux", "dcxo24M",
 					      &ccu_mult_ops,
-					      CLK_SET_RATE_UNGATE),
+					      CLK_SET_RATE_UNGATE | CLK_IS_CRITICAL),
 	},
 };
 

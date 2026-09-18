@@ -43,35 +43,53 @@
 #include <asm/io.h>
 #include <asm/irq.h>
 
-#define PALETTE_SIZE    256
-#define DRIVER_NAME     "gaviar-fb"
-#define GPIO_BASE       0x02000000
-#define PD_CFG0         0x0090
-#define PD_CFG1         0x0094
-#define PD_CFG2         0x0098
-#define PD_DAT          0x00a0
-#define LCD_RST         (1 << 0)
-#define LCD_WR          (1 << 18)
-#define LCD_RS          (1 << 19)
-#define LCD_RD          (1 << 20)
-#define LCD_CS          (1 << 21)
-#define LCD_BL          (1 << 22)
+#define DRIVER_NAME         "gaviar-fb"
+#define CCU_BASE            0x02001000
+#define GPIO_BASE           0x02000000
+#define LCDC_BASE           0x05461000
+#define PLL_CPU_CTRL_REG    0x0000
+#define PLL_PERI_CTRL_REG   0x0020
+#define PLL_VIDEO0_CTRL_REG 0x0040
+#define PLL_VIDEO1_CTRL_REG 0x0048
+#define DRAM_BGR_REG        0x080C
+#define G2D_CLK_REG         0x0630
+#define G2D_BGR_REG         0x063C
+#define HSTIMER_BGR_REG     0x073C
+#define TCONLCD_CLK_REG     0x0B60
+#define TCONLCD_BGR_REG     0x0B7C
+#define RISC_CLK_REG        0x0D00
+#define RISC_GATING_REG     0x0D04
+#define RISC_CFG_BGR_REG    0x0D0C
+#define PD_CFG0             0x0090
+#define PD_CFG1             0x0094
+#define PD_CFG2             0x0098
+#define PD_DAT              0x00a0
+#define LCD_RST             (1 << 0)
+#define LCD_WR              (1 << 18)
+#define LCD_RS              (1 << 19)
+#define LCD_RD              (1 << 20)
+#define LCD_CS              (1 << 21)
+#define LCD_BL              (1 << 22)
 
 struct myfb_par {
     struct device *dev;
     struct platform_device *pdev;
+
     void *vram_virt;
     uint32_t vram_size;
     dma_addr_t vram_phys;
-    u32 pseudo_palette[16];
+    uint32_t pseudo_palette[16];
     struct fb_videomode mode;
 };
 
 struct iomm {
+    uint8_t *ccu;
     uint8_t *gpio;
+    uint8_t *lcdc;
 };
 
 static struct iomm myio = { 0 };
+static struct myfb_par *mypar = NULL;
 static struct fb_var_screeninfo myfb_var = { 0 };
 static struct fb_fix_screeninfo myfb_fix = {
     .id = DRIVER_NAME,
@@ -194,15 +212,6 @@ static int lcd_init(struct myfb_par *mypar)
     lcd_write_cmd(0x29);
     lcd_write_cmd(0x2c);
 
-    {
-        int i = 0;
-        uint16_t *p = mypar->vram_virt;
-
-        for (i = 0; i < 320 * 240; i++) {
-            lcd_write_dat(*p++);
-        }
-    }
-
     return 0;
 }
 
@@ -223,9 +232,8 @@ static int myfb_setcolreg(unsigned n, unsigned r, unsigned g, unsigned b, unsign
 
 static int myfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
 {
-    int bpp = var->bits_per_pixel >> 3;
     struct myfb_par *par = info->par;
-    unsigned long line_size = var->xres_virtual * bpp;
+    unsigned int line_size = var->xres_virtual * 2;
 
     if ((var->xres != 320) || (var->yres != 240) || (var->bits_per_pixel != 16)) {
         return -EINVAL;
@@ -259,6 +267,7 @@ static int myfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
     if (var->yres + var->yoffset > var->yres_virtual) {
         var->yoffset = var->yres_virtual - var->yres;
     }
+
     return 0;
 }
 
@@ -282,16 +291,35 @@ static int myfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
 }
 
 static struct fb_ops myfb_ops = {
-    .owner          = THIS_MODULE,
-    .fb_check_var   = myfb_check_var,
-    .fb_set_par     = myfb_set_par,
-    .fb_setcolreg   = myfb_setcolreg,
+    .owner = THIS_MODULE,
+    .fb_set_par = myfb_set_par,
+    .fb_setcolreg = myfb_setcolreg,
+    .fb_check_var = myfb_check_var,
     .fb_pan_display = myfb_pan_display,
 
-    .fb_fillrect  = sys_fillrect,
-    .fb_copyarea  = sys_copyarea,
+    .fb_fillrect = sys_fillrect,
+    .fb_copyarea = sys_copyarea,
     .fb_imageblit = sys_imageblit,
 };
+
+static struct timer_list my_timer;
+
+static void timer_handler(struct timer_list *timer)
+{
+    static unsigned int cc = 0;
+
+    if (mypar && mypar->vram_virt) {
+        int i = 0;
+        uint16_t *p = mypar->vram_virt;
+
+        for (i = 0; i < 320 * 240; i++) {
+            lcd_write_dat(*p++);
+        }
+    }
+
+    printk("%d\n", cc++);
+    mod_timer(&my_timer, jiffies + msecs_to_jiffies(500));
+}
 
 static int myfb_probe(struct platform_device *device)
 {
@@ -308,8 +336,6 @@ static int myfb_probe(struct platform_device *device)
     mode->xres = 320;
     mode->yres = 240;
     mode->vmode = FB_VMODE_NONINTERLACED;
-    pm_runtime_enable(&device->dev);
-    pm_runtime_get_sync(&device->dev);
 
     info = framebuffer_alloc(sizeof(struct myfb_par), &device->dev);
     if (!info) {
@@ -321,8 +347,13 @@ static int myfb_probe(struct platform_device *device)
     par->dev = &device->dev;
     fb_videomode_to_var(&myfb_var, mode);
 
-    par->vram_size = (320 * 240 * 2 * 4) + 4096;
-    par->vram_virt = dma_alloc_coherent(&device->dev, par->vram_size, (resource_size_t *)&par->vram_phys, GFP_KERNEL | GFP_DMA);
+    par->vram_size = 320 * 240 * 2 * 2;
+    par->vram_virt = dma_alloc_coherent(&device->dev, 
+        par->vram_size,
+        (resource_size_t *)&par->vram_phys,
+        GFP_KERNEL | GFP_DMA
+    );
+
     if (!par->vram_virt) {
         return -EINVAL;
     }
@@ -338,8 +369,9 @@ static int myfb_probe(struct platform_device *device)
     info->var = myfb_var;
     info->fbops = &myfb_ops;
     info->pseudo_palette = par->pseudo_palette;
-    info->fix.visual = (info->var.bits_per_pixel <= 8) ? FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
-    ret = fb_alloc_cmap(&info->cmap, PALETTE_SIZE, 0);
+    info->fix.visual = (info->var.bits_per_pixel <= 8) ?
+        FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
+    ret = fb_alloc_cmap(&info->cmap, 256, 0);
     if (ret) {
         return -EINVAL;
     }
@@ -352,6 +384,10 @@ static int myfb_probe(struct platform_device *device)
         return -EINVAL;
     }
     lcd_init(par);
+
+    mypar = par;
+    timer_setup(&my_timer, timer_handler, 0);
+    mod_timer(&my_timer, jiffies + msecs_to_jiffies(1000));
 
     return 0;
 }
@@ -379,7 +415,6 @@ static int myfb_suspend(struct platform_device *dev, pm_message_t state)
 
     console_lock();
     fb_set_suspend(info, 1);
-    pm_runtime_put_sync(&dev->dev);
     console_unlock();
 
     return 0;
@@ -390,7 +425,6 @@ static int myfb_resume(struct platform_device *dev)
     struct fb_info *info = platform_get_drvdata(dev);
 
     console_lock();
-    pm_runtime_get_sync(&dev->dev);
     fb_set_suspend(info, 0);
     console_unlock();
 
@@ -401,10 +435,10 @@ static const struct of_device_id fb_of_match[] = { { .compatible = "allwinner,su
 MODULE_DEVICE_TABLE(of, fb_of_match);
 
 static struct platform_driver fb_driver = {
-    .probe    = myfb_probe,
-    .remove   = myfb_remove,
-    .suspend  = myfb_suspend,
-    .resume   = myfb_resume,
+    .probe = myfb_probe,
+    .resume = myfb_resume,
+    .remove = myfb_remove,
+    .suspend = myfb_suspend,
     .driver = {
         .name   = DRIVER_NAME,
         .owner  = THIS_MODULE,
@@ -414,12 +448,58 @@ static struct platform_driver fb_driver = {
 
 static void sunxi_ioremap(void)
 {    
-    myio.gpio = (uint8_t *)ioremap(GPIO_BASE, 1024);
+    myio.ccu = (uint8_t *)ioremap(CCU_BASE, 4096);
+    myio.gpio = (uint8_t *)ioremap(GPIO_BASE, 4096);
+    myio.lcdc = (uint8_t *)ioremap(LCDC_BASE, 4096);
+
+    printk("%s\n", __func__);
+
+    writel((1 << 31) | (1 << 24) | (1 << 16) | (1 << 0), myio.ccu + G2D_CLK_REG);
+    writel((1 << 16) | (1 << 0), myio.ccu + G2D_BGR_REG);
+
+    writel((1 << 31) | (1 << 24), myio.ccu + TCONLCD_CLK_REG);
+    writel((1 << 16) | (1 << 0), myio.ccu + TCONLCD_BGR_REG);
+
+    writel((1 << 16) | (1 << 0), myio.ccu + HSTIMER_BGR_REG);
+
+
+    printk("======\n");
+    printk("PLL_CPU_CTRL = 0x%x\n", readl(myio.ccu + PLL_CPU_CTRL_REG));
+    printk("PLL_PERI_CTRL = 0x%x\n", readl(myio.ccu + PLL_PERI_CTRL_REG));
+    printk("PLL_VIDEO0_CTRL = 0x%x\n", readl(myio.ccu + PLL_VIDEO0_CTRL_REG));
+    printk("PLL_VIDEO1_CTRL = 0x%x\n", readl(myio.ccu + PLL_VIDEO1_CTRL_REG));
+    printk("DRAM_BGR_REG = 0x%x\n", readl(myio.ccu + DRAM_BGR_REG));
+    printk("G2D_CLK_REG = 0x%x\n", readl(myio.ccu + G2D_CLK_REG));
+    printk("G2D_BGR_REG = 0x%x\n", readl(myio.ccu + G2D_BGR_REG));
+    printk("HSTIMER_BGR_REG = 0x%x\n", readl(myio.ccu + HSTIMER_BGR_REG));
+    printk("TCONLCD_CLK_REG = 0x%x\n", readl(myio.ccu + TCONLCD_CLK_REG));
+    printk("TCONLCD_BGR_REG = 0x%x\n", readl(myio.ccu + TCONLCD_BGR_REG));
+    printk("RISC_CLK_REG = 0x%x\n", readl(myio.ccu + RISC_CLK_REG));
+    printk("RISC_GATING_REG = 0x%x\n", readl(myio.ccu + RISC_GATING_REG));
+    printk("RISC_CFG_BGR_REG = 0x%x\n", readl(myio.ccu + RISC_CFG_BGR_REG));
+    printk("======\n");
+
+/*
+#define PLL_CPU_REG         0x0000
+#define PLL_PERI_REG        0x0020
+#define PLL_VIDEO0_REG      0x0040
+#define PLL_VIDEO1_REG      0x0048
+#define DRAM_BGR_REG        0x080C
+#define G2D_CLK_REG         0x0630
+#define G2D_BGR_REG         0x063C
+#define TCONLCD_CLK_REG     0x0B60
+#define TCONLCD_BGR_REG     0x0B7C
+#define RISC_CLK_REG        0x0D00
+#define RISC_GATING_REG     0x0D04
+#define RISC_CFG_BGR_REG    0x0D0C
+*/
 }
 
 static void sunxi_iounmap(void)
 {
+    iounmap(myio.ccu);
     iounmap(myio.gpio);
+    iounmap(myio.lcdc);
 }
 
 static int __init myfb_init(void)

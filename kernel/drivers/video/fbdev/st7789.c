@@ -71,10 +71,16 @@
 #define LCD_CS              (1 << 21)
 #define LCD_BL              (1 << 22)
 
+#define PALETTE_SIZE 256
+
 struct myfb_par {
     struct device *dev;
     struct platform_device *pdev;
 
+    resource_size_t p_palette_base;
+    unsigned short *v_palette_base;
+
+    int bpp;
     void *vram_virt;
     uint32_t vram_size;
     dma_addr_t vram_phys;
@@ -218,6 +224,11 @@ static int lcd_init(struct myfb_par *mypar)
 static int myfb_setcolreg(unsigned n, unsigned r, unsigned g, unsigned b, unsigned t, struct fb_info *info)
 {
     #define CNVT_TOHW(val, width) ((((val) << (width)) + 0x7FFF - (val)) >> 16)
+
+    if (n >= 16) {
+        return -EINVAL;
+    }
+
     r = CNVT_TOHW(r, info->var.red.length);
     b = CNVT_TOHW(b, info->var.blue.length);
     g = CNVT_TOHW(g, info->var.green.length);
@@ -290,12 +301,41 @@ static int myfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
     return 0;
 }
 
+static int myfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+{
+    struct myfb_par *par = info->par;
+    unsigned long offset = vma->vm_pgoff << PAGE_SHIFT;
+    unsigned long size = vma->vm_end - vma->vm_start;
+
+    if (offset >= par->vram_size) {
+        return -EINVAL;
+    }
+
+    if (size > par->vram_size - offset) {
+        return -EINVAL;
+    }
+
+    return dma_mmap_coherent(info->device,
+        vma,
+        par->vram_virt,
+        par->vram_phys,
+        par->vram_size
+    );
+}
+
+static int myfb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+{
+    return 0;
+}
+
 static struct fb_ops myfb_ops = {
     .owner = THIS_MODULE,
     .fb_set_par = myfb_set_par,
     .fb_setcolreg = myfb_setcolreg,
     .fb_check_var = myfb_check_var,
     .fb_pan_display = myfb_pan_display,
+    .fb_ioctl = myfb_ioctl,
+    .fb_mmap = myfb_mmap,
 
     .fb_fillrect = sys_fillrect,
     .fb_copyarea = sys_copyarea,
@@ -315,7 +355,7 @@ static void timer_handler(struct timer_list *timer)
         }
     }
 
-    mod_timer(&my_timer, jiffies + msecs_to_jiffies(500));
+    mod_timer(&my_timer, jiffies + msecs_to_jiffies(1000));
 }
 
 static int myfb_probe(struct platform_device *device)
@@ -342,23 +382,41 @@ static int myfb_probe(struct platform_device *device)
     par = info->par;
     par->pdev = device;
     par->dev = &device->dev;
+    par->bpp = 16;
     fb_videomode_to_var(&myfb_var, mode);
 
-    par->vram_size = 320 * 240 * 2 * 2;
+    par->vram_size = 320 * 240 * 2 * 4;
     par->vram_virt = dma_alloc_coherent(&device->dev, 
         par->vram_size,
-        (resource_size_t *)&par->vram_phys,
+        &par->vram_phys,
         GFP_KERNEL | GFP_DMA
     );
 
     if (!par->vram_virt) {
         return -EINVAL;
     }
+
     info->screen_base = (char __iomem *)par->vram_virt;
     myfb_fix.smem_start = par->vram_phys;
     myfb_fix.smem_len = par->vram_size;
     myfb_fix.line_length = 320 * 2;
+
+    par->v_palette_base = dma_alloc_coherent(&device->dev,
+        PALETTE_SIZE,
+        &par->p_palette_base,
+        GFP_KERNEL | GFP_DMA
+    );
+
+    if (!par->v_palette_base) {
+        return -EINVAL;
+    }
+    memset(par->v_palette_base, 0, PALETTE_SIZE);
     myfb_var.grayscale = 0;
+    myfb_var.bits_per_pixel = par->bpp;
+    myfb_var.xres = 320;
+    myfb_var.yres = 240;
+    myfb_var.xres_virtual = 320;
+    myfb_var.yres_virtual = 240 * 4;
     myfb_var.bits_per_pixel = 16;
 
     info->flags = FBINFO_FLAG_DEFAULT;
@@ -395,10 +453,19 @@ static int myfb_remove(struct platform_device *dev)
     struct myfb_par *par = info->par;
 
     if (info) {
-        flush_scheduled_work();
+        del_timer_sync(&my_timer);
+        mypar = NULL;
+
         unregister_framebuffer(info);
         fb_dealloc_cmap(&info->cmap);
-        dma_free_coherent(NULL, par->vram_size, par->vram_virt, par->vram_phys);
+
+        if (par->v_palette_base) {
+            dma_free_coherent(&dev->dev, PALETTE_SIZE, par->v_palette_base, par->p_palette_base);
+        }
+
+        if (par->vram_virt) {
+            dma_free_coherent(&dev->dev, par->vram_size, par->vram_virt, par->vram_phys);
+        }
         framebuffer_release(info);
     }
     iounmap(myio.gpio);

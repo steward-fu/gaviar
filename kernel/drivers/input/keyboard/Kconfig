@@ -791,4 +791,9 @@ config KEYBOARD_TPKEY
 		To compile this driver as a module, choose M here:
 		based on verify board.
 
+config KEYBOARD_GAVIAR
+	tristate "keypad driver for Gaviar handheld"
+	help
+	  Say Y here if you want to use keypad for Gaviar handheld.
+
 endif

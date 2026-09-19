@@ -306,8 +306,6 @@ static struct timer_list my_timer;
 
 static void timer_handler(struct timer_list *timer)
 {
-    static unsigned int cc = 0;
-
     if (mypar && mypar->vram_virt) {
         int i = 0;
         uint16_t *p = mypar->vram_virt;
@@ -317,7 +315,6 @@ static void timer_handler(struct timer_list *timer)
         }
     }
 
-    printk("%d\n", cc++);
     mod_timer(&my_timer, jiffies + msecs_to_jiffies(500));
 }
 

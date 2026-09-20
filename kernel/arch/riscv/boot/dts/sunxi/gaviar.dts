@@ -6,7 +6,7 @@
     compatible = "allwinner,d1", "arm,sun20iw1p1", "allwinner,sun20iw1p1", "allwinner,gaviar";
 
     chosen {
-        bootargs = "console=ttyS4,115200n8 console=tty ignore_loglevel loglevel=8 root=/dev/mmcblk0p1 rootwait rw rootfstype=ext4 init=/sbin/init";
+        bootargs = "console=ttyS4,115200n8 console=tty ignore_loglevel loglevel=8 root=/dev/mmcblk0p1 rootwait ro rootfstype=vfat init=/mininit-syspart";
     };
 
     memory@40000000 {

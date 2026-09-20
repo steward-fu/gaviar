@@ -6,7 +6,7 @@
     compatible = "allwinner,d1", "arm,sun20iw1p1", "allwinner,sun20iw1p1", "allwinner,gaviar";
 
     chosen {
-        bootargs = "console=ttyS4,115200n8 console=tty ignore_loglevel loglevel=8 root=/dev/mmcblk0p1 rootwait ro rootfstype=vfat init=/mininit-syspart";
+        bootargs = "console=ttyS4,115200n8 ignore_loglevel loglevel=8 root=/dev/mmcblk0p1 rootwait ro rootfstype=vfat init=/mininit-syspart";
     };
 
     memory@40000000 {
@@ -90,6 +90,20 @@
         drive-strength = <10>;
         bias-pull-up;
     };
+
+    spdif_pins_a: spdif@0 {
+        pins = "PG18";
+        function = "spdif";
+        drive-strength = <20>;
+        bias-disable;
+    };
+
+    spdif_pins_b: spdif_sleep@0 {
+        pins = "PG18";
+        function = "io_disabled";
+        drive-strength = <20>;
+        bias-disable;
+    };
 };
 
 &uart4 {
@@ -121,3 +135,31 @@
     status = "okay";
 };
 
+&codec {
+    mic1gain = <0x1F>;
+    mic2gain = <0x1F>;
+    mic3gain = <0x1F>;
+    adcdrc_cfg = <0x0>;
+    adchpf_cfg = <0x1>;
+    dacdrc_cfg = <0x0>;
+    dachpf_cfg = <0x0>;
+    digital_vol = <0x00>;
+    lineout_vol = <0x1a>;
+    headphonegain = <0x03>;
+    pa_level = <0x01>;
+    pa_pwr_level = <0x01>;
+    pa_msleep_time = <0x78>;
+    playback_cma = <128>;
+    capture_cma = <256>;
+    status = "okay";
+};
+
+&sndcodec {
+    hp_detect_case = <0x00>;
+    jack_enable = <0x01>;
+    status = "okay";
+};
+
+&dummy_cpudai {
+    status = "okay";
+};

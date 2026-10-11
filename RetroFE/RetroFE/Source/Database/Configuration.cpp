@@ -1,0 +1,640 @@
+/* This file is part of RetroFE.
+ *
+ * RetroFE is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * RetroFE is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with RetroFE.  If not, see <http://www.gnu.org/licenses/>.
+ */
+#include "Configuration.h"
+#include "../Utility/Log.h"
+#include "../Utility/Utils.h"
+#include <algorithm>
+#include <locale>
+#include <fstream>
+#include <sstream>
+#include <sys/stat.h>
+
+#ifdef WIN32
+#include <windows.h>
+#elif __APPLE__
+#include <libproc.h>
+#include <sys/types.h>
+#include <unistd.h>
+#else
+#include <sys/types.h>
+#include <unistd.h>
+#endif
+
+std::string Configuration::absolutePath;
+std::string Configuration::userPath;
+bool Configuration::isUserLayout_ = false;
+
+Configuration::Configuration()
+{
+}
+
+Configuration::~Configuration()
+{
+}
+
+void Configuration::initialize()
+{
+    const char *environment = std::getenv("RETROFE_PATH");
+#if defined(__linux) || defined(__APPLE__)
+    std::string home_load = std::getenv("HOME") + std::string("/.retrofe");
+    std::ifstream retrofe_path(home_load.c_str());
+#endif
+    // Check Environment for path
+    if (environment != NULL)
+    {
+        absolutePath = environment;
+    }
+/*#if defined(__linux) || defined(__APPLE__)
+    // Or check for home based flat file works on linux/mac
+    else if (retrofe_path && std::getline( retrofe_path, absolutePath ))
+    {
+	   retrofe_path.close();
+    }
+#endif*/
+    // Or check executable for path
+    else
+    {
+#ifdef WIN32
+        HMODULE hModule = GetModuleHandle(NULL);
+        CHAR exe[MAX_PATH];
+        GetModuleFileName(hModule, exe, MAX_PATH);
+        std::string sPath(exe);
+        sPath = Utils::getDirectory(sPath);
+        sPath = Utils::getParentDirectory(sPath);
+#elif __APPLE__
+	char exepath[PROC_PIDPATHINFO_MAXSIZE];
+	if( proc_pidpath (getpid(), exepath, sizeof(exepath)) <= 0 ) // Error to console if no path to write logs…
+            fprintf(stderr, "Cannot set absolutePath: %s\nOverride with RETROFE_PATH env var\n", strerror(errno));
+        std::string sPath = Utils::getDirectory(exepath);
+
+        // RetroFE can be started from the command line: 'retrofe' or as an app, by clicking RetroFE.app.
+        // If this was started as an app bundle, relocate it's current working directory to the root folder.
+        // as an example /usr/local/opt/retro/RetroFE.app/Contents/MacOS becomes /usr/local/opt/retrofe
+        // Note: executing 'brew applinks retrofe' - should create symlink to /Applications/RetroFE.app
+        size_t rootPos = sPath.find("/RetroFE.app/Contents/MacOS");
+	if(rootPos!=std::string::npos)
+		sPath = sPath.erase(rootPos);
+#else
+        char exepath[1024] = {};
+        sprintf(exepath, "/proc/%d/exe", getpid());
+        readlink(exepath, exepath, sizeof(exepath));
+        std::string sPath(exepath);
+        sPath = Utils::getDirectory(sPath);
+#endif
+
+        absolutePath = sPath;
+    }
+
+    /** Get user path */
+    struct stat info;
+    if(stat(home_load.c_str(), &info) == 0){
+    //if(IsPathExist(home_load)){
+        userPath = home_load;
+    }
+}
+
+bool Configuration::import(std::string keyPrefix, std::string file)
+{
+    return import("", keyPrefix, file);
+}
+
+bool Configuration::import(std::string collection, std::string keyPrefix, std::string file, bool mustExist)
+{
+    bool retVal = true;
+    int lineCount = 0;
+    std::string line;
+
+    Logger::write(Logger::ZONE_INFO, "Configuration", "Importing \"" + file + "\"");
+
+    std::ifstream ifs(file.c_str());
+
+    if (!ifs.is_open())
+    {
+        if (mustExist)
+        {
+            Logger::write(Logger::ZONE_ERROR, "Configuration", "Could not open " + file + "\"");
+        }
+        else
+        {
+            Logger::write(Logger::ZONE_INFO, "Configuration", "Could not open " + file + "\"");
+        }
+
+        return false;
+    }
+
+    while (std::getline (ifs, line))
+    {
+        lineCount++;
+        retVal = retVal && parseLine(collection, keyPrefix, line, lineCount);
+    }
+
+    ifs.close();
+
+    return retVal;
+}
+
+bool Configuration::importLayouts(std::string folder, std::string file, bool userLayout, bool mustExist)
+{
+    bool retVal = true;
+    int lineCount = 0;
+    std::string line;
+
+    Logger::write(Logger::ZONE_INFO, "Configuration", "Importing layouts from \"" + file + "\"");
+
+    std::ifstream ifs(file.c_str());
+
+    if (!ifs.is_open())
+    {
+        if (mustExist)
+        {
+            Logger::write(Logger::ZONE_ERROR, "Configuration", "Could not open " + file + "\"");
+        }
+        else
+        {
+            Logger::write(Logger::ZONE_INFO, "Configuration", "Could not open " + file + "\"");
+        }
+
+        return false;
+    }
+
+    while (std::getline (ifs, line))
+    {
+        lineCount++;
+
+        // strip out any comments
+        line = Utils::filterComments(line);
+
+        if(line.empty() || (line.find_first_not_of(" \t\r") == std::string::npos))
+        {
+	       retVal = true;
+        }
+        else
+        {
+
+
+    	    std::string layoutName = trimEnds(line);
+    	    std::string layoutPath = Utils::combinePath(folder, layoutName);
+
+            /** Check if dir exists */
+            struct stat info;
+            if(stat(layoutPath.c_str(), &info) != 0){
+            //if(!IsPathExist(layoutPath)){
+                printf("Layout path: %s does not exist\n", layoutPath.c_str());
+                Logger::write(Logger::ZONE_ERROR, "Configuration", "Layout path: " + layoutPath + " does not exist");
+                continue;
+            }
+
+    	    /* Set new layoutPath */
+    	    layouts_.push_back( LayoutPair(layoutPath, userLayout) );
+
+    	    std::stringstream ss;
+    	    ss << "Dump layouts: "  << "\"" << layoutPath << "\"";
+
+    	    Logger::write(Logger::ZONE_INFO, "Configuration", ss.str());
+    	    retVal = true;
+        }
+    }
+
+    ifs.close();
+
+    return retVal;
+}
+
+
+bool Configuration::importCurrentLayout(std::string folder, std::string file, bool mustExist)
+{
+    bool retVal = false;
+    int lineCount = 0;
+    std::string line;
+	int index = 0;
+
+    Logger::write(Logger::ZONE_INFO, "Configuration", "Importing layouts from \"" + file + "\"");
+
+    std::ifstream ifs(file.c_str());
+
+    if (!ifs.is_open())
+    {
+        if (mustExist)
+        {
+            Logger::write(Logger::ZONE_ERROR, "Configuration", "Could not open " + file + "\"");
+        }
+        else
+        {
+            Logger::write(Logger::ZONE_INFO, "Configuration", "Could not open " + file + "\"");
+        }
+
+        return false;
+    }
+
+    while (std::getline (ifs, line))
+    {
+        lineCount++;
+
+        // strip out any comments
+        line = Utils::filterComments(line);
+
+        // line empty
+        if(line.empty() || (line.find_first_not_of(" \t\r") == std::string::npos))
+        {
+	       retVal = false;
+        }
+        // Check if layout is in existing list
+        else
+        {
+    	    std::string seekedLayoutName = trimEnds(line);
+    	    bool layoutFoundInList = false;
+            bool userLayout = false;
+            std::string layoutPath;
+
+    	    /** Check existing layout list */
+    	    for(std::vector<LayoutPair>::iterator it = layouts_.begin(); it != layouts_.end(); ++it){
+    	        std::string curLayoutName = Utils::getFileName((*it).first);
+                userLayout = (*it).second;
+        		if(!curLayoutName.compare(seekedLayoutName)){
+        		    layoutFoundInList = true;
+        		    break;
+        		}
+        		index++;
+    	    }
+
+            /** Reset default theme if not found in list */
+            if(!layoutFoundInList){
+                Logger::write(Logger::ZONE_ERROR, "Configuration", "Layout \"" + seekedLayoutName + "\" not found in list! Resetting \"Classic\" theme by default");
+                printf("Layout \"%s\" not found in list!\n", seekedLayoutName.c_str());
+
+                seekedLayoutName = std::string("Classic");
+                userLayout = false;
+                layoutPath = Utils::combinePath(Configuration::absolutePath, "layouts", seekedLayoutName);  
+                index = 0;
+            }
+
+            /** Check if Layout path exists */
+            if(userLayout){
+                layoutPath = Utils::combinePath(Configuration::userPath, "layouts", seekedLayoutName);
+            }
+            else{
+                layoutPath = Utils::combinePath(Configuration::absolutePath, "layouts", seekedLayoutName);   
+            }              
+            printf("Layout directory is \"%s\" \n", layoutPath.c_str());
+            struct stat info;
+            if(stat(layoutPath.c_str(), &info) != 0){
+            //if(IsPathExist(layoutPath)){
+                Logger::write(Logger::ZONE_ERROR, "Configuration", "Layout directory\"" + layoutPath + "\" was not found! Resetting \"Classic\" theme by default");
+                printf("Layout directory \"%s\" was not found!\n", layoutPath.c_str());
+            }
+
+	        /* Remove layout properties if they already exist */
+	        if(properties_.find("layout") != properties_.end())
+    		{
+    		    properties_.erase("layout");
+    		}
+            if(properties_.find("userTheme") != properties_.end())
+            {
+                properties_.erase("userTheme");
+            }
+
+    		/* Set new pair <key, value> for key = layout */
+    		properties_.insert(PropertiesPair("layout", seekedLayoutName));
+            properties_.insert(PropertiesPair("userTheme", userLayout?"yes":"no"));
+
+            Configuration::isUserLayout_ = userLayout;
+
+    		std::stringstream ss;
+    		//printf("Found layout: %s at idx %d\n", layoutPathFound.c_str(), index);
+    		ss << "Found layout: "  << "\"" << layoutPath << "\" in layouts list at idx " << index;
+    		Logger::write(Logger::ZONE_INFO, "Configuration", ss.str());
+    		retVal = true;
+
+    		break;
+        }
+    }
+
+    ifs.close();
+
+	currentLayoutIdx_ = index;
+
+    return retVal;
+}
+
+bool Configuration::exportCurrentLayout(std::string layoutFilePath, std::string layoutName)
+{
+    bool retVal = false;
+
+    Logger::write(Logger::ZONE_INFO, "Configuration", "Exporting layout \"" + layoutName +
+		  "\" in file \"" + layoutFilePath +"\"");
+
+    Utils::rootfsWritable();
+    std::ofstream layoutFile;
+    layoutFile.open(layoutFilePath.c_str());
+    layoutFile << layoutName << std::endl;
+    layoutFile.close();
+    Utils::rootfsReadOnly();
+
+    return retVal;
+}
+
+
+bool Configuration::parseLine(std::string collection, std::string keyPrefix, std::string line, int lineCount)
+{
+    bool retVal = false;
+    std::string key;
+    std::string value;
+    size_t position;
+    std::string delimiter = "=";
+
+    // strip out any comments
+    line = Utils::filterComments(line);
+
+    if(line.empty() || (line.find_first_not_of(" \t\r") == std::string::npos))
+    {
+        retVal = true;
+    }
+    // all configuration fields must have an assignment operator
+    else if((position = line.find(delimiter)) != std::string::npos)
+    {
+        if(keyPrefix.size() != 0)
+        {
+            keyPrefix += ".";
+        }
+
+        key = keyPrefix + line.substr(0, position);
+
+        key = trimEnds(key);
+
+
+        value = line.substr(position + delimiter.length(), line.length());
+        value = trimEnds(value);
+
+        if(collection != "")
+        {
+            value = Utils::replace(value, "%ITEM_COLLECTION_NAME%", collection);
+        }
+
+        /* remove property if key already exists */
+        if(properties_.find(key) != properties_.end())
+        {
+	    properties_.erase(key);
+        }
+
+        /* Set new pair <key, value> */
+        properties_.insert(PropertiesPair(key, value));
+
+        std::stringstream ss;
+        ss << "Dump: "  << "\"" << key << "\" = \"" << value << "\"";
+
+
+        Logger::write(Logger::ZONE_INFO, "Configuration", ss.str());
+        retVal = true;
+    }
+    else
+    {
+        std::stringstream ss;
+        ss << "Missing an assignment operator (=) on line " << lineCount;
+        Logger::write(Logger::ZONE_ERROR, "Configuration", ss.str());
+    }
+
+    return retVal;
+}
+
+std::string Configuration::trimEnds(std::string str)
+{
+    // strip off any initial tabs or spaces
+    size_t trimStart = str.find_first_not_of(" \t");
+
+    if(trimStart != std::string::npos)
+    {
+        size_t trimEnd = str.find_last_not_of(" \t");
+
+        str = str.substr(trimStart, trimEnd - trimStart + 1);
+    }
+
+    return str;
+}
+
+bool Configuration::getRawProperty(std::string key, std::string &value)
+{
+    bool retVal = false;
+
+    if(properties_.find(key) != properties_.end())
+    {
+        value = properties_[key];
+
+        retVal = true;
+    }
+
+    return retVal;
+}
+bool Configuration::getProperty(std::string key, std::string &value)
+{
+    bool retVal = getRawProperty(key, value);
+
+    std::string baseMediaPath = absolutePath;
+    std::string baseItemPath  = absolutePath;
+
+    baseMediaPath = Utils::combinePath(absolutePath, "collections");
+    baseItemPath  = Utils::combinePath(absolutePath, "collections");
+
+    getRawProperty("baseMediaPath", baseMediaPath);
+    getRawProperty("baseItemPath", baseItemPath);
+
+    value = Utils::replace(value, "%BASE_MEDIA_PATH%", baseMediaPath);
+    value = Utils::replace(value, "%BASE_ITEM_PATH%", baseItemPath);
+    return retVal;
+}
+
+bool Configuration::getProperty(std::string key, int &value)
+{
+    std::string strValue;
+
+    bool retVal = getProperty(key, strValue);
+
+    if(retVal)
+    {
+        std::stringstream ss;
+        ss << strValue;
+        ss >> value;
+    }
+
+    return retVal;
+}
+
+bool Configuration::getProperty(std::string key, bool &value)
+{
+    std::string strValue;
+
+    bool retVal = getProperty(key, strValue);
+
+    if(retVal)
+    {
+        if(!strValue.compare("yes") || !strValue.compare("true"))
+        {
+            value = true;
+        }
+        else
+        {
+            value = false;
+        }
+    }
+
+    return retVal;
+}
+
+void Configuration::setProperty(std::string key, std::string value)
+{
+    properties_[key] = value;
+}
+
+bool Configuration::propertyExists(std::string key)
+{
+    return (properties_.find(key) != properties_.end());
+}
+
+bool Configuration::propertyPrefixExists(std::string key)
+{
+    PropertiesType::iterator it;
+
+    for(it = properties_.begin(); it != properties_.end(); ++it)
+    {
+        std::string search = key + ".";
+        if(it->first.compare(0, search.length(), search) == 0)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void Configuration::childKeyCrumbs(std::string parent, std::vector<std::string> &children)
+{
+    PropertiesType::iterator it;
+
+    for(it = properties_.begin(); it != properties_.end(); ++it)
+    {
+        std::string search = parent + ".";
+        if(it->first.compare(0, search.length(), search) == 0)
+        {
+            std::string crumb = Utils::replace(it->first, search, "");
+
+            std::size_t end = crumb.find_first_of(".");
+
+            if(end != std::string::npos)
+            {
+                crumb = crumb.substr(0, end);
+            }
+
+            if(std::find(children.begin(), children.end(), crumb) == children.end())
+            {
+                children.push_back(crumb);
+            }
+        }
+    }
+}
+
+std::string Configuration::convertToAbsolutePath(std::string prefix, std::string path)
+{
+    char first = ' ';
+    char second = ' ';
+
+    if(path.length() >= 0)
+    {
+        first = path.c_str()[0];
+    }
+    if(path.length() >= 1)
+    {
+        second = path.c_str()[1];
+    }
+
+    // check to see if it is already an absolute path
+    if((first != Utils::pathSeparator) &&
+            //(first != '.') &&
+            (second != ':'))
+    {
+        path = Utils::combinePath(prefix, path);
+    }
+
+    return path;
+}
+
+bool Configuration::getPropertyAbsolutePath(std::string key, std::string &value)
+{
+    bool retVal = getProperty(key, value);
+
+    if(retVal)
+    {
+        value = convertToAbsolutePath(absolutePath, value);
+    }
+
+    return retVal;
+}
+
+void Configuration::getMediaPropertyAbsolutePath(std::string collectionName, std::string mediaType, std::string &value)
+{
+    return getMediaPropertyAbsolutePath(collectionName, mediaType, false, value);
+}
+
+
+void Configuration::getMediaPropertyAbsolutePath(std::string collectionName, std::string mediaType, bool system, std::string &value)
+{
+    std::string key = "collections." + collectionName + ".media." + mediaType;
+    if (system)
+    {
+        key = "collections." + collectionName + ".media.system_artwork";
+    }
+
+    // use user-overridden setting if it exists
+    if(getPropertyAbsolutePath(key, value))
+    {
+        return;
+    }
+
+    // use user-overridden base media path if it was specified
+    std::string baseMediaPath;
+    if(!getPropertyAbsolutePath("baseMediaPath", baseMediaPath))
+    {
+        // base media path was not specified, assume media files are in the collection
+        baseMediaPath = Utils::combinePath(absolutePath, "collections");
+    }
+
+    if(system)
+    {
+        value = Utils::combinePath(baseMediaPath, collectionName, "system_artwork");
+    }
+    else
+    {
+        value = Utils::combinePath(baseMediaPath, collectionName, "medium_artwork", mediaType);
+    }
+}
+
+void Configuration::getCollectionAbsolutePath(std::string collectionName, std::string &value)
+{
+    std::string key = "collections." + collectionName + ".list.path";
+
+    if(getPropertyAbsolutePath(key, value))
+    {
+        return;
+    }
+
+    std::string baseItemPath;
+    if(getPropertyAbsolutePath("baseItemPath", baseItemPath))
+    {
+        value = Utils::combinePath(baseItemPath, collectionName);
+        return;
+    }
+
+    value = Utils::combinePath(absolutePath, "collections", collectionName, "roms");
+}
+

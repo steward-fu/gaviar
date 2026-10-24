@@ -87,3 +87,4 @@ obj-$(CONFIG_INPUT_XEN_KBDDEV_FRONTEND)	+= xen-kbdfront.o
 obj-$(CONFIG_INPUT_YEALINK)		+= yealink.o
 obj-$(CONFIG_INPUT_IDEAPAD_SLIDEBAR)	+= ideapad_slidebar.o
 obj-$(CONFIG_HALL_SENSOR) += hall_sensor.o
+obj-$(CONFIG_GAVIAR_VIBRATION) += gaviar.o

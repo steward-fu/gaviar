@@ -909,4 +909,10 @@ config HALL_SENSOR
 	help
 		This driver implements hall device driver.
 
+config GAVIAR_VIBRATION
+	tristate "Gaviar vibration driver support"
+	default n
+	help
+		This driver implements vibration device driver for Gaviar handheld.
+
 endif

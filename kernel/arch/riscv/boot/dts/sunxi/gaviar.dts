@@ -35,6 +35,11 @@
         dsp0_gpio_int = &dsp0_gpio_int;
     };
 
+    vbr {
+        compatible = "allwinner,gaviar";
+        status = "okay";
+    };
+
     dsp0: dsp0 {
         compatible = "allwinner,sun20iw1-dsp";
         status = "okay";

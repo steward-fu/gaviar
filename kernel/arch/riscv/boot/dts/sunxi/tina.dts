@@ -1,6 +1,6 @@
 /dts-v1/;
 
-#include "tina.dtsi"
+#include "sun20iw1p1.dtsi"
 
 /{
     compatible = "allwinner,d1", "arm,sun20iw1p1", "allwinner,sun20iw1p1";
@@ -42,7 +42,7 @@
 
     dsp0: dsp0 {
         compatible = "allwinner,sun20iw1-dsp";
-        status = "disabled";
+        status = "okay";
     };
 
     dsp0_gpio_int: dsp0_gpio_int {
@@ -53,22 +53,14 @@
 
     reg_vdd_cpu: vdd-cpu {
         compatible = "sunxi-pwm-regulator";
-        pwms = <&pwm 0 5000 1>;
+        pwms = <&pwm 0 5000 0>;
         regulator-name = "vdd_cpu";
         regulator-min-microvolt = <810000>;
         regulator-max-microvolt = <1160000>;
         regulator-ramp-delay = <25>;
         regulator-always-on;
         regulator-boot-on;
-        status = "okay";
-    };
-
-    reg_sd_dummy: regulator-sd-dummy {
-        compatible = "regulator-fixed";
-        regulator-name = "sd-dummy";
-        regulator-min-microvolt = <3300000>;
-        regulator-max-microvolt = <3300000>;
-        regulator-always-on;
+        status = "disabled";
     };
 
     reg_usb1_vbus: usb1-vbus {
@@ -77,7 +69,7 @@
         regulator-min-microvolt = <5000000>;
         regulator-max-microvolt = <5000000>;
         regulator-enable-ramp-delay = <1000>;
-        gpio = <&pio PB 3 GPIO_ACTIVE_HIGH>;
+        /* gpio = <&pio PB 3 GPIO_ACTIVE_HIGH>; */
         enable-active-high;
     };
 };
@@ -87,11 +79,30 @@
 };
 
 &pio {
+    cpu16_pins_a: cpu16@0 {
+        pins = "PD1", "PD2", "PD3", "PD4", "PD5", \
+            "PD6", "PD7", "PD8", "PD10", "PD11", "PD12", \
+            "PD13", "PD14", "PD15", "PD16", "PD17", \
+            "PD18", "PD19", "PD20", "PD21";
+        function = "lcd0";
+        drive-strength = <30>;
+        bias-disable;
+    };
+
+    cpu16_pins_b: cup16@1 {
+        pins = "PD1", "PD2", "PD3", "PD4", "PD5", \
+            "PD6", "PD7", "PD8", "PD10", "PD11", "PD12",\
+            "PD13", "PD14", "PD15", "PD16", "PD17", \
+            "PD18", "PD19", "PD20", "PD21";
+            function = "io_disabled";
+            bias-disable;
+    };
+
     sdc0_pins_a: sdc0@0 {
         allwinner,pins = "PF0", "PF1", "PF2", "PF3", "PF4", "PF5";
         allwinner,function = "sdc0";
         allwinner,muxsel = <2>;
-        allwinner,drive = <3>;
+        allwinner,drive = <1>;
         allwinner,pull = <1>;
         pins = "PF0", "PF1", "PF2", "PF3", "PF4", "PF5";
         function = "sdc0";
@@ -99,7 +110,6 @@
         bias-pull-up;
         power-source = <3300>;
     };
-
 
     sdc0_pins_b: sdc0@1 {
         pins = "PF0", "PF1", "PF2", "PF3", "PF4", "PF5";
@@ -110,12 +120,10 @@
     };
 
     sdc0_pins_c: sdc0@2 {
-        pins = "PF0", "PF1", "PF2",
-            "PF3", "PF4", "PF5";
+        pins = "PF0", "PF1", "PF2", "PF3", "PF4", "PF5";
         function = "gpio_in";
     };
 
-    /* TODO: add jtag pin */
     sdc0_pins_d: sdc0@3 {
         pins = "PF2", "PF4";
         function = "uart0";
@@ -124,45 +132,38 @@
     };
 
     sdc0_pins_e: sdc0@4 {
-        pins = "PF0", "PF1", "PF3",
-            "PF5";
+        pins = "PF0", "PF1", "PF3", "PF5";
         function = "jtag";
         drive-strength = <10>;
         bias-pull-up;
     };
 
-
     sdc1_pins_a: sdc1@0 {
-        pins = "PG0", "PG1", "PG2",
-               "PG3", "PG4", "PG5";
+        pins = "PG0", "PG1", "PG2", "PG3", "PG4", "PG5";
         function = "sdc1";
         drive-strength = <30>;
         bias-pull-up;
     };
 
     sdc1_pins_b: sdc1@1 {
-        pins = "PG0", "PG1", "PG2",
-               "PG3", "PG4", "PG5";
-            function = "gpio_in";
+        pins = "PG0", "PG1", "PG2", "PG3", "PG4", "PG5";
+        function = "gpio_in";
     };
 
     sdc2_pins_a: sdc2@0 {
-        allwinner,pins = "PC2", "PC3", "PC4",
-                 "PC5", "PC6", "PC7";
+        allwinner,pins = "PC2", "PC3", "PC4", "PC5", "PC6", "PC7";
         allwinner,function = "sdc2";
         allwinner,muxsel = <3>;
         allwinner,drive = <3>;
         allwinner,pull = <1>;
-        pins = "PC2", "PC3", "PC4",
-            "PC5", "PC6", "PC7";
+        pins = "PC2", "PC3", "PC4", "PC5", "PC6", "PC7";
         function = "sdc2";
         drive-strength = <30>;
         bias-pull-up;
     };
 
     sdc2_pins_b: sdc2@1 {
-        pins = "PC2", "PC3", "PC4",
-               "PC5", "PC6", "PC7";
+        pins = "PC2", "PC3", "PC4", "PC5", "PC6", "PC7";
         function = "gpio_in";
     };
 
@@ -171,15 +172,15 @@
         function = "clk_fanout1";
     };
 
-    uart0_pins_a: uart0_pins@0 {  /* For EVB1 board */
-        pins = "PF2", "PF4";
+    uart0_pins_a: uart0_pins@0 {  /* For nezha board */
+        pins = "PE2", "PE3";
         function = "uart0";
         drive-strength = <10>;
         bias-pull-up;
     };
 
-    uart0_pins_b: uart0_pins@1 {  /* For EVB1 board */
-        pins = "PF2", "PF4";
+    uart0_pins_b: uart0_pins@1 {  /* For nezha board */
+        pins = "PE2", "PE3";
         function = "gpio_in";
     };
 
@@ -207,17 +208,12 @@
         function = "gpio_in";
     };
 
-    uart3_pins_a: uart3_pins@0 {  /* For awol nezha board */
+    uart3_pins_a: uart3_pins@0 {  /* For EVB1 board */
         pins = "PB6", "PB7";
         function = "uart3";
-        muxsel = <7>;
+        muxsel = <5>;
         drive-strength = <10>;
         bias-pull-up;
-    };
-
-    uart3_pins_b: uart3_pins@1 {  /* For awol nezha board */
-        pins = "PB6", "PB7";
-        function = "gpio_in";
     };
 
     uart4_pins_a: uart4_pins@0 {  /* For EVB1 board */
@@ -256,39 +252,35 @@
     };
 
     twi2_pins_a: twi2@0 {
-        pins = "PE12", "PE13";
+        pins = "PD20", "PD21";
         function = "twi2";
         drive-strength = <10>;
     };
 
     twi2_pins_b: twi2@1 {
-        pins = "PE12", "PE13";
+        pins = "PD20", "PD21";
         function = "gpio_in";
     };
 
     twi3_pins_a: twi3@0 {
-        pins = "PE6", "PE7";
+        pins = "PB6", "PB7";
         function = "twi3";
         drive-strength = <10>;
     };
 
     twi3_pins_b: twi3@1 {
-        pins = "PE6", "PE7";
+        pins = "PB6", "PB7";
         function = "gpio_in";
     };
 
     gmac_pins_a: gmac@0 {
-        pins = "PE0", "PE1", "PE2", "PE3",
-               "PE4", "PE5", "PE6", "PE7",
-               "PE8", "PE9";
+        pins = "PE0", "PE1", "PE2", "PE3", "PE4", "PE5", "PE6", "PE7", "PE8", "PE9";
         function = "gmac0";
         drive-strength = <10>;
     };
 
     gmac_pins_b: gmac@1 {
-        pins = "PE0", "PE1", "PE2", "PE3",
-               "PE4", "PE5", "PE6", "PE7",
-               "PE8", "PE9";
+        pins = "PE0", "PE1", "PE2", "PE3", "PE4", "PE5", "PE6", "PE7", "PE8", "PE9";
         function = "gpio_in";
     };
 
@@ -337,7 +329,7 @@
 
     daudio2_pins_a: daudio2@0 {
         /* I2S_PIN: MCLK, BCLK, LRCK */
-        pins = "PF6", "PF3", "PF5";
+        pins = "PB7", "PB5", "PB6";
         function = "i2s2";
         drive-strength = <20>;
         bias-disable;
@@ -345,7 +337,7 @@
 
     daudio2_pins_b: daudio2@1 {
         /* I2S_PIN: DOUT0 */
-        pins = "PF1";
+        pins = "PB4";
         function = "i2s2_dout";
         drive-strength = <20>;
         bias-disable;
@@ -353,14 +345,14 @@
 
     daudio2_pins_c: daudio2@2 {
         /* I2S_PIN: DIN0 */
-        pins = "PF0";
+        pins = "PB3";
         function = "i2s2_din";
         drive-strength = <20>;
         bias-disable;
     };
 
     daudio2_pins_d: daudio2_sleep@0 {
-        pins = "PF6", "PF3", "PF5", "PF1", "PF0";
+        pins = "PB7", "PB5", "PB6", "PB4", "PB3";
         function = "io_disabled";
         drive-strength = <20>;
         bias-disable;
@@ -385,14 +377,14 @@
         pins = "PC2", "PC4", "PC5"; /* clk, mosi, miso */
         function = "spi0";
         muxsel = <2>;
-        drive-strength = <20>;
+        drive-strength = <10>;
     };
 
     spi0_pins_b: spi0@1 {
         pins = "PC3", "PC7", "PC6";
         function = "spi0";
         muxsel = <2>;
-        drive-strength = <20>;
+        drive-strength = <10>;
         bias-pull-up;   /* cs, hold, wp should be pulled up */
     };
 
@@ -404,7 +396,7 @@
     };
 
     spi1_pins_a: spi1@0 {
-        pins = "PD11", "PD12", "PD13"; /* clk, mosi, miso */
+        pins = "PD10", "PD14", "PD15"; /* clk, mosi, miso */
         function = "spi1";
         drive-strength = <10>;
     };
@@ -423,39 +415,14 @@
     };
 
     ledc_pins_a: ledc@0 {
-        pins = "PG13";
+        pins = "PE5";
         function = "ledc";
         drive-strength = <10>;
     };
 
     ledc_pins_b: ledc@1 {
-        pins = "PG13";
+        pins = "PE5";
         function = "gpio_in";
-    };
-
-    pwm0_pin_a: pwm0@0 {
-        pins = "PD16";
-        function = "pwm0";
-        drive-strength = <10>;
-        bias-pull-up;
-    };
-
-    pwm0_pin_b: pwm0@1 {
-        pins = "PD16";
-        function = "gpio_in";
-        bias-disable;
-    };
-
-    pwm2_pin_a: pwm2@0 {
-        pins = "PD18";
-        function = "pwm2";
-        drive-strength = <10>;
-        bias-pull-up;
-    };
-
-    pwm2_pin_b: pwm2@1 {
-        pins = "PD18";
-        function = "gpio_out";
     };
 
     pwm7_pin_a: pwm7@0 {
@@ -470,6 +437,17 @@
         function = "gpio_in";
     };
 
+    pwm6_pin_a: pwm6@0 {
+        pins = "PD9";
+        function = "pwm6";
+        drive-strength = <10>;
+        bias-pull-up;
+    };
+
+    pwm6_pin_b: pwm6@1 {
+        pins = "PD9";
+        function = "gpio_in";
+    };
 
     s_cir0_pins_a: s_cir@0 {
         pins = "PB7";
@@ -495,45 +473,6 @@
         function = "gpio_in";
     };
 };
-
-&uart0 {
-    pinctrl-names = "default", "sleep";
-    pinctrl-0 = <&uart0_pins_a>;
-    pinctrl-1 = <&uart0_pins_b>;
-    status = "disabled";
-};
-
-&uart1 {
-    pinctrl-names = "default", "sleep";
-    pinctrl-0 = <&uart1_pins_a>;
-    pinctrl-1 = <&uart1_pins_b>;
-    status = "disabled";
-};
-
-&uart2 {
-    pinctrl-names = "default", "sleep";
-    pinctrl-0 = <&uart2_pins_a>;
-    pinctrl-1 = <&uart2_pins_b>;
-    status = "disabled";
-};
-
-/* for debug */
-&uart3 {
-    pinctrl-names = "default", "sleep";
-    pinctrl-0 = <&uart3_pins_a>;
-    pinctrl-1 = <&uart3_pins_b>;
-    status = "disabled";
-};
-
-/* for dsp debug
-&uart3 {
-    compatible = "allwinner,sun20iw1-dsp-uart";
-    pinctrl-names = "default", "sleep";
-    pinctrl-0 = <&uart3_pins_a>;
-    pinctrl-1 = <&uart3_pins_b>;
-    status = "disabled";
-};
-*/
 
 &uart4 {
     pinctrl-names = "default", "sleep";
@@ -582,35 +521,37 @@
         compatible    = "allwinner,sunxi-rfkill";
         chip_en;
         power_en;
-        pinctrl-0 = <&wlan_pins_a>;
-        pinctrl-names = "default";
-        status        = "okay";
+        status        = "disabled";
 
         wlan: wlan@0 {
             compatible    = "allwinner,sunxi-wlan";
-            clock-names = "32k-fanout1";
-            clocks = <&ccu CLK_FANOUT1_OUT>;
+            pinctrl-0 = <&wlan_pins_a>;
+            pinctrl-names = "default";
+            /*clock-names = "32k-fanout1";*/
+            /*clocks = <&ccu CLK_FANOUT1_OUT>;*/
             wlan_busnum    = <0x1>;
             wlan_regon    = <&pio PG 12 GPIO_ACTIVE_HIGH>;
             wlan_hostwake  = <&pio PG 10 GPIO_ACTIVE_HIGH>;
             /*wlan_power    = "VCC-3V3";*/
-            /*wlan_power_vol = <3300000>;*/
+            wlan_power_vol = <3300000>;
             /*interrupt-parent = <&pio>;
             interrupts = < PG 10 IRQ_TYPE_LEVEL_HIGH>;*/
             wakeup-source;
-
+            status        = "disabled";
         };
-        
+
         bt: bt@0 {
             compatible    = "allwinner,sunxi-bt";
-            clock-names = "32k-fanout1";
-            clocks = <&ccu CLK_FANOUT1_OUT>;
+            pinctrl-0 = <&wlan_pins_a>;
+            pinctrl-names = "default";
+            /*clock-names = "32k-fanout1";*/
+            /*clocks = <&ccu CLK_FANOUT1_OUT>;*/
             /*bt_power_num = <0x01>;*/
             /*bt_power      = "axp803-dldo1";*/
             /*bt_io_regulator = "axp803-dldo1";*/
             /*bt_io_vol = <3300000>;*/
             /*bt_power_vol = <330000>;*/
-            bt_rst_n      = <&pio PE 13 GPIO_ACTIVE_LOW>;
+            bt_rst_n      = <&pio PG 13 GPIO_ACTIVE_LOW>;
             status        = "disabled";
         };
     };
@@ -628,29 +569,8 @@
         type_addr_wifi = <0x0>;
         type_addr_bt   = <0x0>;
         type_addr_eth  = <0x0>;
-        status         = "okay";
+        status         = "disabled";
     };
-};
-
-&sdc2 {
-    non-removable;
-    bus-width = <4>;
-    mmc-ddr-1_8v;
-    mmc-hs200-1_8v;
-    no-sdio;
-    no-sd;
-    ctl-spec-caps = <0x308>;
-    cap-mmc-highspeed;
-    sunxi-power-save-mode;
-    sunxi-dis-signal-vol-sw;
-    mmc-bootpart-noacc;
-    max-frequency = <150000000>;
-    /*vmmc-supply = <&reg_dcdc1>;*/
-    /*emmc io vol 3.3v*/
-    /*vqmmc-supply = <&reg_aldo1>;*/
-    /*emmc io vol 1.8v*/
-    /*vqmmc-supply = <&reg_eldo1>;*/
-    status = "disabled";
 };
 
 &sdc0 {
@@ -677,36 +597,8 @@
     /*vdmmc33sw-supply = <&reg_dcdc1>;*/
     /*vqmmc18sw-supply = <&reg_eldo1>;*/
     /*vdmmc18sw-supply = <&reg_eldo1>;*/
-    vmmc-supply = <&reg_sd_dummy>;
-    vqmmc-supply = <&reg_sd_dummy>;
-    vdmmc-supply = <&reg_sd_dummy>;
-    vdmmc33sw-supply = <&reg_sd_dummy>;
-    vqmmc33sw-supply = <&reg_sd_dummy>;
-    vdmmc18sw-supply = <&reg_sd_dummy>;
-    vqmmc18sw-supply = <&reg_sd_dummy>;
     status = "okay";
 };
-
-&sdc1 {
-    bus-width = <4>;
-    no-mmc;
-    no-sd;
-    cap-sd-highspeed;
-    /*sd-uhs-sdr12*/
-    /*sd-uhs-sdr25;*/
-    /*sd-uhs-sdr50;*/
-    /*sd-uhs-ddr50;*/
-    /*sd-uhs-sdr104;*/
-    /*sunxi-power-save-mode;*/
-    /*sunxi-dis-signal-vol-sw;*/
-    cap-sdio-irq;
-    keep-power-in-suspend;
-    ignore-pm-notify;
-    max-frequency = <150000000>;
-    ctl-spec-caps = <0x8>;
-    status = "disabled";
-};
-
 
 /*
 tvd configuration
@@ -778,9 +670,9 @@ tvd_row*tvd_column is the total tvd channel number to be used in multichannel mo
 /* if audiocodec is used, sdc0 and uart0 should be closed to enable PA. */
 &codec {
     /* MIC and headphone gain setting */
-    mic1gain     = <0x1F>;
-    mic2gain     = <0x1F>;
-    mic3gain     = <0x1F>;
+    mic1gain     = <0x13>;
+    mic2gain     = <0x13>;
+    mic3gain     = <0x13>;
     /* ADC/DAC DRC/HPF func enabled */
         /* 0x1:DAP_HP_EN; 0x2:DAP_SPK_EN; 0x3:DAP_HPSPK_EN */
     adcdrc_cfg     = <0x0>;
@@ -790,16 +682,13 @@ tvd_row*tvd_column is the total tvd channel number to be used in multichannel mo
     /* Volume about */
     digital_vol     = <0x00>;
     lineout_vol     = <0x1a>;
-    headphonegain    = <0x03>;
+    headphonegain    = <0x00>;
     /* Pa enabled about */
     pa_level     = <0x01>;
     pa_pwr_level     = <0x01>;
     pa_msleep_time     = <0x78>;
-    /* gpio-spk    = <&pio PF 2 GPIO_ACTIVE_HIGH>;*/
+    /* gpio-spk    = <&pio PF 2 GPIO_ACTIVE_HIGH>; */
     /* gpio-spk-pwr    = <&pio PF 4 GPIO_ACTIVE_HIGH>; */
-    /* CMA config about */
-    playback_cma    = <128>;
-    capture_cma    = <256>;
     /* regulator about */
     /* avcc-supply    = <&reg_aldo1>; */
     /* hpvcc-supply    = <&reg_eldo1>; */
@@ -807,12 +696,15 @@ tvd_row*tvd_column is the total tvd channel number to be used in multichannel mo
 };
 
 &sndcodec {
-    hp_detect_case    = <0x00>;
+    hp_detect_case    = <0x01>;
     jack_enable    = <0x01>;
     status = "okay";
 };
 
 &dummy_cpudai {
+    /* CMA config about */
+    playback_cma    = <128>;
+    capture_cma    = <256>;
     status = "okay";
 };
 
@@ -827,7 +719,7 @@ tvd_row*tvd_column is the total tvd channel number to be used in multichannel mo
     status = "disabled";
 };
 
-&sounddmic {
+&dmic_codec {
     status = "disabled";
 };
 
@@ -878,7 +770,7 @@ tvd_row*tvd_column is the total tvd channel number to be used in multichannel mo
     /* simple-audio-card,bitclock-master = <&daudio0_master>; */
     /* simple-audio-card,bitclock-inversion; */
     /* simple-audio-card,frame-inversion; */
-    status = "disabled";
+    status = "okay";
     daudio0_master: simple-audio-card,codec {
         /* sound-dai = <&ac108>; */
     };
@@ -900,28 +792,31 @@ tvd_row*tvd_column is the total tvd channel number to be used in multichannel mo
 };
 
 &sounddaudio1 {
-    status = "disabled";
+    status = "okay";
     daudio1_master: simple-audio-card,codec {
         /* sound-dai = <&ac108>; */
     };
 };
 
 &daudio2 {
-    mclk_div     = <0x01>;
+    mclk_div     = <0x00>;
     frametype     = <0x00>;
     tdm_config     = <0x01>;
     sign_extend     = <0x00>;
     tx_data_mode     = <0x00>;
     rx_data_mode     = <0x00>;
     msb_lsb_first     = <0x00>;
-    pcm_lrck_period = <0x80>;
+    pcm_lrck_period = <0x20>;
     slot_width_select = <0x20>;
     asrc_function_en  = <0x00>;
     pinctrl-names   = "default", "sleep";
-    pinctrl-0       = <&daudio2_pins_a &daudio2_pins_b &daudio2_pins_c>;
-    pinctrl-1       = <&daudio2_pins_d>;
-    pinctrl_used    = <0x1>;
-    daudio_type    = <0x0>;
+    /*pinctrl-0       = <&daudio2_pins_a &daudio2_pins_b &daudio2_pins_c>;*/
+    /*pinctrl-1       = <&daudio2_pins_d>;*/
+    /* HDMI audio, no need pin */
+    pinctrl-0;
+    pinctrl-1;
+    pinctrl_used    = <0x0>;
+    daudio_type    = <0x1>;
     status = "disabled";
 };
 
@@ -931,9 +826,10 @@ tvd_row*tvd_column is the total tvd channel number to be used in multichannel mo
 };
 
 &sounddaudio2 {
-    status = "okay";
+    status = "disabled";
+    simple-audio-card,name = "sndhdmi";
     daudio2_master: simple-audio-card,codec {
-        /* sound-dai = <&ac108>; */
+        sound-dai = <&hdmiaudio>;
     };
 };
 
@@ -941,11 +837,11 @@ tvd_row*tvd_column is the total tvd channel number to be used in multichannel mo
     pinctrl-names   = "default","sleep";
     pinctrl-0       = <&spdif_pins_a>;
     pinctrl-1       = <&spdif_pins_b>;
-    status = "okay";
+    status = "disabled";
 };
 
 &soundspdif {
-    status = "okay";
+    status = "disabled";
 };
 
 /*
@@ -961,14 +857,14 @@ tvd_row*tvd_column is the total tvd channel number to be used in multichannel mo
     usb_port_type = <0x2>;
     usb_detect_type = <0x1>;
     usb_detect_mode = <0>;
-    usb_id_gpio = <&pio PE 12 GPIO_ACTIVE_HIGH>;
+    usb_id_gpio = <&pio PB 1 GPIO_ACTIVE_HIGH>;
     enable-active-high;
-    usb_det_vbus_gpio = <&pio PB 0 GPIO_ACTIVE_LOW>;
+    usb_det_vbus_gpio = <&pio PB 0 GPIO_ACTIVE_HIGH>;
     usb_wakeup_suspend = <0>;
     usb_serial_unique = <0>;
     usb_serial_number = "20080411";
     rndis_wceis = <1>;
-    status = "okay";
+    status = "disabled";
 };
 
 &ehci0 {
@@ -981,19 +877,19 @@ tvd_row*tvd_column is the total tvd channel number to be used in multichannel mo
 
 &usbc1 {
     device_type = "usbc1";
-    usb_port_type = <0x01>;
-    sb_detect_type = <0x1>;    
+       usb_port_type = <0x01>;
+        sb_detect_type = <0x1>;    
     usb_regulator_io = "nocare";
     usb_wakeup_suspend = <0>;
-    status = "okay";
+    status = "disabled";
 };
 
 &ehci1 {
-    status = "okay";
+    status = "disabled";
 };
 
 &ohci1 {
-    status = "okay";
+    status = "disabled";
 };
 
 &twi0 {
@@ -1019,54 +915,13 @@ tvd_row*tvd_column is the total tvd channel number to be used in multichannel mo
 };
 
 &twi2 {
-    clock-frequency = <400000>;
+    clock-frequency = <100000>;
     pinctrl-0 = <&twi2_pins_a>;
     pinctrl-1 = <&twi2_pins_b>;
     pinctrl-names = "default", "sleep";
     dmas = <&dma 45>, <&dma 45>;
     dma-names = "tx", "rx";
-    status = "okay";
-
-    /* pcf8574-usage:
-     * only use gpio0~7, 0 means PP0.
-     * pin set:
-     * gpios = <&pcf8574 0 GPIO_ACTIVE_LOW>;
-     * interrupt set:
-     * interrupt-parent = <&pcf8574>;
-     * interrupts = <0 IRQ_TYPE_EDGE_FALLING>;
-     */
-    pcf8574: gpio@38 {
-        compatible = "nxp,pcf8574";
-        reg = <0x38>;
-        gpio_base = <2020>;
-        gpio-controller;
-        #gpio-cells = <2>;
-        interrupt-controller;
-        #interrupt-cells = <2>;
-        interrupt-parent = <&pio>;
-        interrupts = <PB 2 IRQ_TYPE_EDGE_FALLING>;
-        status = "disabled";
-    };
-
-    ctp@14 {
-        compatible = "allwinner,goodix";
-        device_type = "ctp";
-        reg = <0x14>;
-        status = "okay";
-        ctp_name = "gt9xxnew_ts";
-        ctp_twi_id = <0x2>;
-        ctp_twi_addr = <0x14>;
-        ctp_screen_max_x = <0x320>;
-        ctp_screen_max_y = <0x1e0>;
-        ctp_revert_x_flag = <0x0>;
-        ctp_revert_y_flag = <0x0>;
-        ctp_exchange_x_y_flag = <0x0>;
-        ctp_int_port = <&pio PB 5 GPIO_ACTIVE_HIGH>;
-        ctp_wakeup = <&pio PB 4 GPIO_ACTIVE_HIGH>;
-        /*ctp-supply = <&reg_aldo2>;*/
-        /*ctp_power_ldo = <&reg_aldo2>;*/
-        /*ctp_power_ldo_vol = <3300>;*/
-    };
+    status = "disabled";
 };
 
 &twi3 {
@@ -1078,13 +933,15 @@ tvd_row*tvd_column is the total tvd channel number to be used in multichannel mo
 };
 
 &gmac0 {
-    phy-mode = "rmii";
-    use_ephy25m = <0>;
+    phy-mode = "rgmii";
+    use_ephy25m = <1>;
     pinctrl-0 = <&gmac_pins_a>;
     pinctrl-1 = <&gmac_pins_b>;
     pinctrl-names = "default", "sleep";
-    phy-rst = <&pio PE 10 GPIO_ACTIVE_HIGH>;
-    status = "okay";
+    phy-rst = <&pio PE 16 GPIO_ACTIVE_HIGH>;
+    tx-delay = <3>; /*2~4*/
+    rx-delay = <0>;
+    status = "disabled";
 };
 
 &spi0 {
@@ -1095,8 +952,8 @@ tvd_row*tvd_column is the total tvd channel number to be used in multichannel mo
     /*spi-supply = <&reg_dcdc1>;*/
     spi_slave_mode = <0>;
     spi0_cs_number = <1>;
-    spi0_cs_bitmap = <1>;
-    status = "okay";
+        spi0_cs_bitmap = <1>;
+    status = "disabled";
 
     spi-nand@0 {
         compatible = "spi-nand";
@@ -1104,19 +961,11 @@ tvd_row*tvd_column is the total tvd channel number to be used in multichannel mo
         reg = <0x0>;
         spi-rx-bus-width=<0x04>;
         spi-tx-bus-width=<0x04>;
-        status="okay";
-    };
-
-    spi-nor@0 {
-        compatible = "jedec,spi-nor";
-        spi-max-frequency=<30000000>;
-        reg = <0x0>;
-        spi-rx-bus-width=<0x01>;
-        spi-tx-bus-width=<0x01>;
         status="disabled";
     };
 };
 
+/*
 &spi1 {
     clock-frequency = <100000000>;
     pinctrl-0 = <&spi1_pins_a &spi1_pins_b>;
@@ -1135,12 +984,13 @@ tvd_row*tvd_column is the total tvd channel number to be used in multichannel mo
         status = "disabled";
     };
 };
+*/
 
 &ledc {
     pinctrl-names = "default", "sleep";
     pinctrl-0 = <&ledc_pins_a>;
     pinctrl-1 = <&ledc_pins_b>;
-    led_count = <3>;
+    led_count = <1>;
     output_mode = "GRB";
     reset_ns = <84>;
     t1h_ns = <800>;
@@ -1150,7 +1000,7 @@ tvd_row*tvd_column is the total tvd channel number to be used in multichannel mo
     wait_time0_ns = <84>;
     wait_time1_ns = <84>;
     wait_data_time_ns = <600000>;
-    status    = "okay";
+    status    = "disabled";
 };
 
 &keyboard0 {
@@ -1199,53 +1049,62 @@ chn_cfg_mode     : Hardware DE channel allocation config. 0:single display with 
                    in display.
 ----------------------------------------------------------------------------------*/
 &disp {
-    disp_init_enable         = <1>;
-    disp_mode                = <0>;
+	disp_init_enable         = <1>;
+	disp_mode                = <0>;
 
-    screen0_output_type      = <1>;
-    screen0_output_mode      = <4>;
+	screen0_output_type      = <1>;
+	screen0_output_mode      = <10>;
 
-    screen1_output_type      = <3>;
-    screen1_output_mode      = <4>;
-    
-    screen1_output_format    = <0>;
-    screen1_output_bits      = <0>;
-    screen1_output_eotf      = <4>;
-    screen1_output_cs        = <257>;
-    screen1_output_dvi_hdmi  = <2>;
-    screen1_output_range     = <2>;
-    screen1_output_scan      = <0>;
-    screen1_output_aspect_ratio = <8>;
-    dev0_output_type         = <1>;
-    dev0_output_mode         = <4>;
-    dev0_screen_id           = <0>;
-    dev0_do_hpd              = <0>;
+	screen1_output_type      = <3>;
+	screen1_output_mode      = <10>;
 
-    dev1_output_type         = <4>;
-    dev1_output_mode         = <10>;
-    dev1_screen_id           = <1>;
-    dev1_do_hpd              = <1>;
+	screen1_output_format    = <0>;
+	screen1_output_bits      = <0>;
+	screen1_output_eotf      = <4>;
+	screen1_output_cs        = <257>;
+	screen1_output_dvi_hdmi  = <2>;
+	screen1_output_range     = <2>;
+	screen1_output_scan      = <0>;
+	screen1_output_aspect_ratio = <8>;
 
-    def_output_dev           = <0>;
-    hdmi_mode_check          = <1>;
-    disp_rotation_used         = <1>;
-    degree0                     = <0>;
-    fb0_format               = <0>;
-    fb0_buffer_num           = <1>;    
-    /*fb0_width                = <800>;*/
-    /*fb0_height               = <480>;*/  /*read from lcd*/
-    fb1_format               = <0>;
-    fb1_width                = <0>;
-    fb1_height               = <0>;
-    chn_cfg_mode             = <1>;
+	dev0_output_type         = <1>;
+	dev0_output_mode         = <10>;
+	dev0_screen_id           = <0>;
+	dev0_do_hpd              = <0>;
 
-    disp_para_zone           = <1>;
-    /*VCC-LCD*/
-/*    dc1sw-supply = <&reg_dc1sw>;*/
-    /*VCC-DSI*/
-/*    eldo3-supply = <&reg_eldo3>;*/
-    /*VCC-PD*/
-/*    dcdc1-supply = <&reg_dcdc1>;*/
+	dev1_output_type         = <4>;
+	dev1_output_mode         = <10>;
+	dev1_screen_id           = <1>;
+	dev1_do_hpd              = <1>;
+
+	def_output_dev           = <1>;
+	hdmi_mode_check          = <3>;
+
+	fb0_format               = <10>;
+
+/* ------------------------     
+	fb0_buffer_num           = <2>;	
+	fb0_pixel_sequence 	 = <3>;
+	fb0_scaler_mode_enable   = <0>;
+-----------------------------*/
+	fb0_width                = <0>;
+	fb0_height               = <0>;
+
+	disp_rotation_used	 = <0>;
+	degree0			 = <0>;
+
+	fb1_format               = <0>;
+	fb1_width                = <0>;
+	fb1_height               = <0>;
+	chn_cfg_mode             = <1>;
+
+	disp_para_zone           = <1>;
+	/*VCC-LCD*/
+/*	dc1sw-supply = <&reg_dc1sw>;*/
+	/*VCC-DSI*/
+/*	eldo3-supply = <&reg_eldo3>;*/
+	/*VCC-PD*/
+/*	dcdc1-supply = <&reg_dcdc1>;*/
 };
 
 /*----------------------------------------------------------------------------------
@@ -1256,8 +1115,8 @@ chn_cfg_mode     : Hardware DE channel allocation config. 0:single display with 
 ;lcd_hv_clk_phase      0:0 degree;1:90 degree;2:180 degree;3:270 degree
 ;lcd_hv_sync_polarity  0:vs low,hs low; 1:vs high,hslow; 2:vs low,hs high; 3:vs high,hs high
 ;lcd_hv_syuv_seq       0:YUYV; 1:YVYU; 2:UYVY; 3:VYUY
-;lcd_cpu_if            0:18bit/1 cycle parallel(RGB666); 4:16bit/1cycle parallel (RGB565)
-;                      6:18bit/3 cycle parallel(RGB666); 7:16bit/2cycle parallel (RGB565)
+;lcd_cpu_if            0:18bit/1 cycle parallel(RGB666); 8:16bit/1cycle parallel (RGB565)
+;                      12:18bit/3 cycle parallel(RGB666); 14:16bit/2cycle parallel (RGB565)
 ;lcd_cpu_te            0:frame auto trigger; 1:frame triggered by te rising edge; 2:frame triggered by te falling edge;
 ;lcd_dsi_if            0:video mode; 1: Command mode; 2:video burst mode
 ;lcd_dsi_te            0:frame auto trigger; 1:frame triggered by te rising edge; 2:frame triggered by te falling edge;
@@ -1307,221 +1166,49 @@ pull up or pull down(default 0), driver level(default 1), data>
 ;For lvds0: use lvds0_pins_a  and lvds0_pins_b instead
 ;----------------------------------------------------------------------------------*/
 &lcd0 {
-    lcd_used            = <1>;
+	lcd_used = <1>;
+	lcd_driver_name ="tft08006";
 
-    lcd_driver_name     = "tft08006";
-    lcd_backlight       = <100>;
-    lcd_if              = <4>;
+	/* part 2 */
+	lcd_if = <1>;
+	lcd_cpu_if = <8>;
 
-    lcd_x               = <800>;
-    lcd_y               = <1280>;
-    lcd_width           = <52>;
-    lcd_height          = <52>;
-    lcd_dclk_freq       = <70>;
+	/* part 3 */
+	lcd_width = <23>;
+	lcd_height = <43>;
+	lcd_x = <320>;
+	lcd_y = <240>;
+	lcd_dclk_freq = <6>;
+	lcd_hbp = <34>;
+	lcd_ht = <384>;
+	lcd_hspw = <10>;
+	lcd_vbp = <14>;
+	lcd_vt = <260>;
+	lcd_vspw = <4>;
 
-    lcd_pwm_used        = <1>;
-    lcd_pwm_ch          = <7>;
-    lcd_pwm_freq        = <1000>;
-    lcd_pwm_pol         = <0>;
-    lcd_pwm_max_limit   = <255>;
+	/* part 4 */
+	lcd_backlight = <50>;
+	lcd_pwm_used = <1>;
+	lcd_pwm_ch = <7>;
+	lcd_pwm_freq = <20000>;
+	lcd_pwm_pol = <1>;
+	lcd_bright_curve_en = <1>;
 
-    lcd_hbp             = <32>;
-    lcd_ht              = <868>;
-    lcd_hspw            = <4>;
-    lcd_vbp             = <12>;
-    lcd_vt              = <1311>;
-    lcd_vspw            = <4>;
+	/* part 5 */
+	lcd_cpu_mode= <1>;
+	lcd_cpu_te= <0>;
+	lcd_frm = <2>;
+	lcd_gamma_en = <0>;
+	lcd_cmap_en = <0>;
 
-    lcd_dsi_if          = <0>;
-    lcd_dsi_lane        = <4>;
-    lcd_lvds_if         = <0>;
-    lcd_lvds_colordepth = <0>;
-    lcd_lvds_mode       = <0>;
-    lcd_frm             = <0>;
-    lcd_hv_clk_phase    = <0>;
-    lcd_hv_sync_polarity= <0>;
-    lcd_io_phase        = <0x0000>;
-    lcd_gamma_en        = <0>;
-    lcd_bright_curve_en = <0>;
-    lcd_cmap_en         = <0>;
-    lcd_fsync_en        = <0>;
-    lcd_fsync_act_time  = <1000>;
-    lcd_fsync_dis_time  = <1000>;
-    lcd_fsync_pol       = <0>;
+	/* part 6 */
 
-    deu_mode            = <0>;
-    lcdgamma4iep        = <22>;
-    smart_color         = <90>;
-
-    lcd_gpio_0 =  <&pio PD 20 GPIO_ACTIVE_HIGH>;
-    pinctrl-0 = <&dsi4lane_pins_a>;
-    pinctrl-1 = <&dsi4lane_pins_b>;
-
-/*
-    // 480 * 272 RGB LCD
-    lcd_driver_name     = "default_lcd";
-    lcd_backlight       = <200>;
-    lcd_if              = <0>;
-
-    lcd_x               = <800>;
-    lcd_y               = <480>;
-    lcd_width           = <108>;
-    lcd_height          = <65>;
-    lcd_dclk_freq       = <16>;
-
-    lcd_pwm_used        = <1>;
-    lcd_pwm_ch          = <7>;
-    lcd_pwm_freq        = <500>;
-    lcd_pwm_pol         = <0>;
-
-    lcd_ht              = <816>;
-    lcd_hbp             = <12>;
-    lcd_hspw            = <4>;
-    lcd_vt              = <496>;
-    lcd_vbp             = <12>;
-    lcd_vspw            = <4>;
-
-    lcd_lvds_if         = <0>;
-    lcd_lvds_colordepth = <1>;
-    lcd_lvds_mode       = <0>;
-    lcd_frm             = <1>;
-    lcd_io_phase        = <0x0000>;
-    lcd_gamma_en        = <0>;
-    lcd_bright_curve_en = <0>;
-    lcd_cmap_en         = <0>;
-
-    pinctrl-0 = <&rgb18_pins_a>;
-    pinctrl-1 = <&rgb18_pins_b>;
-
-    // 800 * 480 RGB LCD 
-    lcd_driver_name     = "default_lcd";
-    lcd_if              = <0>;
-    lcd_x               = <800>;
-    lcd_y               = <480>;
-    lcd_width           = <150>;
-    lcd_height          = <94>;
-    lcd_dclk_freq       = <48>;
-
-    lcd_pwm_used        = <1>;
-    lcd_pwm_ch          = <7>;
-    lcd_pwm_freq        = <10000>;
-    lcd_pwm_pol         = <1>;
-
-    lcd_hbp             = <55>;
-    lcd_ht              = <1240>;
-    lcd_hspw            = <20>;
-    lcd_vbp             = <35>;
-    lcd_vt              = <650>;
-    lcd_vspw            = <10>;
-
-    lcd_lvds_if         = <0>;
-    lcd_lvds_colordepth = <1>;
-    lcd_lvds_mode       = <0>;
-    lcd_frm             = <0>;
-    lcd_io_phase        = <0x0000>;
-    lcd_gamma_en        = <0>;
-    lcd_bright_curve_en = <0>;
-    lcd_cmap_en         = <0>;
-
-    deu_mode            = <0>;
-    lcdgamma4iep        = <22>;
-    smart_color         = <90>;
-    pinctrl-0 = <&rgb18_pins_a>;
-    pinctrl-1 = <&rgb18_pins_b>;
-
-
-    // 1280 * 800 RGB LCD
-    lcd_driver_name     = "default_lcd";
-    lcd_backlight       = <150>;
-    lcd_if              = <3>;
-
-    lcd_x               = <1280>;
-    lcd_y               = <800>;
-    lcd_width           = <150>;
-    lcd_height          = <94>;
-    lcd_dclk_freq       = <71>;
-    lcd_rb_swap            = <0>;
-    
-    lcd_pwm_used        = <1>;
-    lcd_pwm_ch          = <7>;
-    lcd_pwm_freq        = <50000>;
-    lcd_pwm_pol         = <1>;
-    lcd_pwm_max_limit   = <255>;
-
-    lcd_hbp             = <20>;
-    lcd_ht              = <1418>;
-    lcd_hspw            = <10>;
-    lcd_vbp             = <10>;
-    lcd_vt              = <814>;
-    lcd_vspw            = <5>;
-
-    lcd_lvds_if         = <0>;
-    lcd_lvds_colordepth = <1>;
-    lcd_lvds_mode       = <0>;
-    lcd_frm             = <1>;
-    lcd_io_phase        = <0x0000>;
-    lcd_hv_clk_phase    = <0>;
-    lcd_hv_sync_polarity = <0>;
-    lcd_gamma_en        = <0>;
-    lcd_bright_curve_en = <0>;
-    lcd_cmap_en         = <0>;
-    lcd_fsync_act_time  = <1000>;
-    lcd_fsync_dis_time  = <1000>;
-    
-    deu_mode            = <0>;
-    lcdgamma4iep        = <22>;
-    smart_color         = <90>;
-
-    pinctrl-0 = <&lvds0_pins_a>;
-    pinctrl-1 = <&lvds0_pins_b>;
-    lcd_bl_en = <&pio PD 20 GPIO_ACTIVE_HIGH>;
-
-    // 800 * 1280 RGB LCD
-    lcd_driver_name     = "he0801a068";
-    lcd_backlight       = <50>;
-    lcd_if              = <4>;
-
-    lcd_x               = <800>;
-    lcd_y               = <1280>;
-    lcd_width           = <52>;
-    lcd_height          = <52>;
-    lcd_dclk_freq       = <78>;
-
-    lcd_pwm_used        = <1>;
-    lcd_pwm_ch          = <7>;
-    lcd_pwm_freq        = <50000>;
-    lcd_pwm_pol         = <1>;
-    lcd_pwm_max_limit   = <255>;
-
-    lcd_hbp             = <149>;
-    lcd_ht              = <978>;
-    lcd_hspw            = <16>;
-    lcd_vbp             = <7>;
-    lcd_vt              = <1329>;
-    lcd_vspw            = <5>;
-
-    lcd_dsi_lane        = <4>;
-    lcd_lvds_if         = <0>;
-    lcd_lvds_colordepth = <1>;
-    lcd_lvds_mode       = <0>;
-    lcd_frm             = <0>;
-    lcd_io_phase        = <0x0000>;
-    lcd_gamma_en        = <0>;
-    lcd_bright_curve_en = <0>;
-    lcd_cmap_en         = <0>;
-    lcd_fsync_act_time  = <1000>;
-    lcd_fsync_dis_time  = <1000>;
-    
-    deu_mode            = <0>;
-    lcdgamma4iep        = <22>;
-    smart_color         = <90>;
-
-    pinctrl-0 = <&dsi4lane_pins_a>;
-    pinctrl-1 = <&dsi4lane_pins_b>;
-    lcd_gpio_0 = <&pio PD 20 1 0 3 1>;
-*/    
+	lcd_gpio_0 = <&pio PD 0 GPIO_ACTIVE_LOW>;
+	pinctrl-0 = <&cpu16_pins_a>;
+	pinctrl-1 = <&cpu16_pins_b>;
 };
 
+/*--------------------------------------
 &hdmi {
     hdmi_used = <0>;
     hdmi_power_cnt = <0>;
@@ -1530,7 +1217,6 @@ pull up or pull down(default 0), driver level(default 1), data>
     hdmi_hdcp22_enable = <0>;
     hdmi_cec_support = <1>;
     hdmi_cec_super_standby = <0>;
-
     ddc_en_io_ctrl = <0>;
     power_io_ctrl = <0>;
 };
@@ -1539,22 +1225,28 @@ pull up or pull down(default 0), driver level(default 1), data>
     pinctrl-names = "active", "sleep";
     pinctrl-0 = <&pwm0_pin_a>;
     pinctrl-1 = <&pwm0_pin_b>;
-    status = "okay";
+    status = "disabled";
 };
 
 &pwm2 {
     pinctrl-names = "active", "sleep";
     pinctrl-0 = <&pwm2_pin_a>;
     pinctrl-1 = <&pwm2_pin_b>;
-    status = "okay";
+    status = "disabled";
 };
-
-
+---------------------------------*/
 &pwm7 {
     pinctrl-names = "active", "sleep";
     pinctrl-0 = <&pwm7_pin_a>;
     pinctrl-1 = <&pwm7_pin_b>;
     status = "okay";
+};
+
+&pwm6 {
+    pinctrl-names = "active", "sleep";
+    pinctrl-0 = <&pwm6_pin_a>;
+    pinctrl-1 = <&pwm6_pin_b>;
+    status = "disabled";
 };
 
 &rtp {
@@ -1564,48 +1256,24 @@ pull up or pull down(default 0), driver level(default 1), data>
     status = "disabled";
 };
 
-&tpadc {
-    key_cnt = <5>;
-    key1 = <420 115>;
-    key2 = <870 114>;
-    key3 = <1290 119>;
-    key4 = <1630 373>;
-    key5 = <1950 28>;
-    status = "disabled";
-};
-
 &gpadc {
-    channel_num = <1>;
-    channel_select = <0x01>;
-    channel_data_select = <0>;
-    channel_compare_select = <0x01>;
-    channel_cld_select = <0x01>;
-    channel_chd_select = <0>;
-    channel0_compare_lowdata = <1600000>;
+    channel_num = <2>;
+    channel_select = <3>;
+    channel_data_select = <3>;
+    channel_compare_select = <3>;
+    channel_cld_select = <3>;
+    channel_chd_select = <3>;
+    channel0_compare_lowdata = <1700000>;
     channel0_compare_higdata = <1200000>;
     channel1_compare_lowdata = <460000>;
     channel1_compare_higdata = <1200000>;
-    key_cnt = <5>;
-    key0_vol = <210>;
-    key0_val = <0x19c>;
-    key1_vol = <410>;
-    key1_val = <0x197>;
-    key2_vol = <590>;
-    key2_val = <158>;
-    key3_vol = <750>;
-    key3_val = <28>;
-    key4_vol = <880>;
-    key4_val = <28>;
-    status = "okay";
-    wakeup-source;
+    status = "disabled";
 };
 
 &s_cir0 {
     pinctrl-names = "default", "sleep";
     pinctrl-0 = <&s_cir0_pins_a>;
     pinctrl-1 = <&s_cir0_pins_b>;
-    ir_protocol_used        = <0>;
-    ir_addr_code0            = <0x0>;
     status = "disabled";
 };
 

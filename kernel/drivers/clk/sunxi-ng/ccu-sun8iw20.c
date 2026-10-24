@@ -59,8 +59,7 @@ static struct ccu_nkmp pll_ddr0_clk = {
 		.reg		= 0x010,
 		.hw.init	= CLK_HW_INIT("pll-ddr0", "dcxo24M",
 					      &ccu_nkmp_ops,
-					      CLK_SET_RATE_UNGATE |
-					      CLK_IS_CRITICAL),
+					      CLK_SET_RATE_UNGATE | CLK_IS_CRITICAL),
 	},
 };
 
@@ -74,7 +73,7 @@ static struct ccu_nm pll_periph0_parent_clk = {
 		.reg		= 0x020,
 		.hw.init	= CLK_HW_INIT("pll-periph0-parent", "dcxo24M",
 					      &ccu_nm_ops,
-					      CLK_SET_RATE_UNGATE),
+					      CLK_SET_RATE_UNGATE | CLK_IS_CRITICAL),
 	},
 };
 
@@ -102,7 +101,7 @@ static struct ccu_nm pll_video0_clk = {
 		.features	= CCU_FEATURE_FIXED_POSTDIV,
 		.hw.init	= CLK_HW_INIT("pll-video0", "dcxo24M",
 					      &ccu_nm_ops,
-					      CLK_SET_RATE_UNGATE),
+					      CLK_SET_RATE_UNGATE | CLK_IS_CRITICAL),
 	},
 };
 
@@ -120,7 +119,7 @@ static struct ccu_nm pll_video1_clk = {
 		.features	= CCU_FEATURE_FIXED_POSTDIV,
 		.hw.init	= CLK_HW_INIT("pll-video1", "dcxo24M",
 					      &ccu_nm_ops,
-					      CLK_SET_RATE_UNGATE),
+					      CLK_SET_RATE_UNGATE | CLK_IS_CRITICAL),
 	},
 };
 
@@ -135,7 +134,7 @@ static struct ccu_nkmp pll_ve_clk = {
 		.reg		= 0x058,
 		.hw.init	= CLK_HW_INIT("pll-ve", "dcxo24M",
 					      &ccu_nkmp_ops,
-					      CLK_SET_RATE_UNGATE),
+					      CLK_SET_RATE_UNGATE | CLK_IS_CRITICAL),
 	},
 };
 
@@ -167,7 +166,7 @@ static struct ccu_nm pll_audio0_4x_clk = {
 				  CCU_FEATURE_SIGMA_DELTA_MOD,
 		.hw.init	= CLK_HW_INIT("pll-audio0-4x", "dcxo24M",
 					      &ccu_nm_ops,
-					      CLK_SET_RATE_UNGATE),
+					      CLK_SET_RATE_UNGATE | CLK_IS_CRITICAL),
 	},
 };
 
@@ -185,7 +184,7 @@ static struct ccu_nm pll_audio1_clk = {
 		.reg		= 0x080,
 		.hw.init	= CLK_HW_INIT("pll-audio1", "dcxo24M",
 					      &ccu_nm_ops,
-					      CLK_SET_RATE_UNGATE),
+					      CLK_SET_RATE_UNGATE | CLK_IS_CRITICAL),
 	},
 };
 static SUNXI_CCU_M(pll_audio1_div2_clk, "pll-audio1-div2", "pll-audio1", 0x080, 16, 3, 0);

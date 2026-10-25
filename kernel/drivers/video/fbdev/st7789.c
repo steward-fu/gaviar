@@ -46,11 +46,47 @@
 #define DRIVER_NAME         "gaviar-fb"
 #define CCU_BASE            0x02001000
 #define GPIO_BASE           0x02000000
-#define LCDC_BASE           0x05461000
+#define TCON_BASE           0x05461000
+#define LCD_GCTL_REG        0x0000
+#define LCD_GINT0_REG       0x0004
+#define LCD_GINT1_REG       0x0008
+#define LCD_FRM_CTL_REG     0x0010
+#define LCD_3D_FIFO_REG     0x003C
+#define LCD_CTL_REG         0x0040
+#define LCD_DCLK_REG        0x0044
+#define LCD_BASIC0_REG      0x0048
+#define LCD_BASIC1_REG      0x004C
+#define LCD_BASIC2_REG      0x0050
+#define LCD_BASIC3_REG      0x0054
+#define LCD_HV_IF_REG       0x0058
+#define LCD_CPU_IF_REG      0x0060
+#define LCD_CPU_WR_REG      0x0064
+#define LCD_IO_POL_REG      0x0088
+#define LCD_IO_TRI_REG      0x008C
+#define LCD_FRM_SEED_REG0   (0x0014 + 0 * 0x04)
+#define LCD_FRM_SEED_REG1   (0x0014 + 1 * 0x04)
+#define LCD_FRM_SEED_REG2   (0x0014 + 2 * 0x04)
+#define LCD_FRM_SEED_REG3   (0x0014 + 3 * 0x04)
+#define LCD_FRM_SEED_REG4   (0x0014 + 4 * 0x04)
+#define LCD_FRM_SEED_REG5   (0x0014 + 5 * 0x04)
+#define LCD_FRM_TAB_REG0    (0x002C + 0 * 0x04)
+#define LCD_FRM_TAB_REG1    (0x002C + 1 * 0x04)
+#define LCD_FRM_TAB_REG2    (0x002C + 2 * 0x04)
+#define LCD_FRM_TAB_REG3    (0x002C + 3 * 0x04)
 #define PLL_CPU_CTRL_REG    0x0000
 #define PLL_PERI_CTRL_REG   0x0020
 #define PLL_VIDEO0_CTRL_REG 0x0040
 #define PLL_VIDEO1_CTRL_REG 0x0048
+#define LCD_CEU_CTL_REG     0x0100
+#define LCD_CPU_TRI0_REG    0x0160
+#define LCD_CPU_TRI1_REG    0x0164
+#define LCD_CPU_TRI2_REG    0x0168
+#define LCD_CPU_TRI3_REG    0x016c
+#define LCD_CPU_TRI4_REG    0x0170
+#define LCD_CPU_TRI5_REG    0x0174
+#define LCD_LVDS_IF_REG     0x0084
+#define LCD_SYNC_CTL_REG    0x0230
+#define LCD_SYNC_POS_REG    0x0234
 #define DRAM_BGR_REG        0x080C
 #define G2D_CLK_REG         0x0630
 #define G2D_BGR_REG         0x063C
@@ -64,6 +100,8 @@
 #define PD_CFG1             0x0094
 #define PD_CFG2             0x0098
 #define PD_DAT              0x00a0
+#define PD_PULL0            0x00B4
+#define PD_PULL1            0x00B8
 #define LCD_RST             (1 << 0)
 #define LCD_WR              (1 << 18)
 #define LCD_RS              (1 << 19)
@@ -91,7 +129,7 @@ struct myfb_par {
 struct iomm {
     uint8_t *ccu;
     uint8_t *gpio;
-    uint8_t *lcdc;
+    uint8_t *tcon;
 };
 
 static struct iomm myio = { 0 };
@@ -108,7 +146,79 @@ static struct fb_fix_screeninfo myfb_fix = {
     .accel = FB_ACCEL_NONE
 };
 
-static void lcd_write(uint32_t ctl, uint32_t dat)
+void sun20i_clrbits(void __iomem *reg, u32 clr_val)
+{
+    uint32_t ret;
+
+    ret = readl(reg);
+    ret &= ~(clr_val);
+    writel(ret, reg);
+}
+
+void sun20i_setbits(void __iomem *reg, u32 set_val)
+{
+    uint32_t ret;
+
+    ret = readl(reg);
+    ret |= set_val;
+    writel(ret, reg);
+}
+
+void sun20i_clrsetbits(void __iomem *reg, u32 clr_val, u32 set_val)
+{
+    uint32_t ret;
+
+    ret = readl(reg);
+    ret &= ~(clr_val);
+    ret |= set_val;
+    writel(ret, reg);
+}
+
+static uint32_t tcon_wait_busy(void)
+{
+    uint32_t cnt = 0;
+
+    sun20i_setbits(myio.tcon + LCD_CPU_IF_REG, (1 << 0));
+    ndelay(10);
+
+    while (1) {
+        if (readl(myio.tcon + LCD_CPU_IF_REG) & 0x00c00000) {
+            if (cnt > 200) {
+                return -1;
+            }
+            else {
+                cnt += 1;
+            }
+        }
+        break;
+    }
+    return 0;
+}
+
+static uint32_t extend_16b_to_24b(uint32_t value)
+{
+    return ((value & 0xfc00) << 8) |
+        ((value & 0x0300) << 6) |
+        ((value & 0x00e0) << 5) |
+        ((value & 0x001f) << 3);
+}
+
+static void tcon_write(uint8_t is_dat, uint32_t dat)
+{
+    while (tcon_wait_busy());
+
+    if (is_dat) {
+        sun20i_setbits(myio.tcon + LCD_CPU_IF_REG, (1 << 25));
+    }
+    else {
+        sun20i_clrbits(myio.tcon + LCD_CPU_IF_REG, (1 << 25));
+    }
+
+    while (tcon_wait_busy());
+    writel(extend_16b_to_24b(dat), myio.tcon + LCD_CPU_WR_REG);
+}
+
+static void gpio_write(uint32_t ctl, uint32_t dat)
 {
     uint32_t r = ctl | ((dat & 0xff) << 1) | ((dat & 0xff00) << 2);
 
@@ -119,12 +229,122 @@ static void lcd_write(uint32_t ctl, uint32_t dat)
 
 static void lcd_write_cmd(uint32_t cmd)
 {
-    lcd_write(LCD_RD | LCD_BL | LCD_RST, cmd);
+    gpio_write(LCD_RD | LCD_BL | LCD_RST, cmd);
 }
 
 static void lcd_write_dat(uint32_t dat)
 {
-    lcd_write(LCD_RS | LCD_RD | LCD_BL | LCD_RST, dat);
+    gpio_write(LCD_RS | LCD_RD | LCD_BL | LCD_RST, dat);
+}
+
+static int tcon_init(void)
+{
+    writel(0xf8000b00, myio.ccu + PLL_VIDEO0_CTRL_REG);
+    writel(0xf8006202, myio.ccu + PLL_VIDEO1_CTRL_REG);
+    writel(0x81000000, myio.ccu + TCONLCD_CLK_REG);
+    writel(0x10001, myio.ccu + TCONLCD_BGR_REG);
+
+    writel(0x80000000, myio.tcon + LCD_GCTL_REG);
+    writel(0x0, myio.tcon + LCD_GINT0_REG);
+    writel(0x0, myio.tcon + LCD_GINT1_REG);
+    writel(0x80000050, myio.tcon + LCD_FRM_CTL_REG);
+    writel(0x1, myio.tcon + LCD_FRM_SEED_REG0);
+    writel(0x3, myio.tcon + LCD_FRM_SEED_REG1);
+    writel(0x5, myio.tcon + LCD_FRM_SEED_REG2);
+    writel(0x7, myio.tcon + LCD_FRM_SEED_REG3);
+    writel(0xb, myio.tcon + LCD_FRM_SEED_REG4);
+    writel(0xd, myio.tcon + LCD_FRM_SEED_REG5);
+    writel(0x1010000, myio.tcon + LCD_FRM_TAB_REG0);
+    writel(0x15151111, myio.tcon + LCD_FRM_TAB_REG1);
+    writel(0x57575555, myio.tcon + LCD_FRM_TAB_REG2);
+    writel(0x7f7f7777, myio.tcon + LCD_FRM_TAB_REG3);
+    writel(0x0, myio.tcon + LCD_3D_FIFO_REG);
+    writel(0x81000000, myio.tcon + LCD_CTL_REG);
+    writel(0xf0000030, myio.tcon + LCD_DCLK_REG);
+    writel(0x13f00ef, myio.tcon + LCD_BASIC0_REG);
+    writel(0x0, myio.tcon + LCD_BASIC1_REG);
+    writel(0x0, myio.tcon + LCD_BASIC2_REG);
+    writel(0x0, myio.tcon + LCD_BASIC3_REG);
+    writel(0x0, myio.tcon + LCD_HV_IF_REG);
+    writel(0x86000005, myio.tcon + LCD_CPU_IF_REG);
+    writel(0x0, myio.tcon + LCD_LVDS_IF_REG);
+    writel(0x0, myio.tcon + LCD_IO_POL_REG);
+    writel(0x0, myio.tcon + LCD_IO_TRI_REG);
+    writel(0x0, myio.tcon + LCD_CEU_CTL_REG);
+    writel(0x3f013f, myio.tcon + LCD_CPU_TRI0_REG);
+    writel(0xef, myio.tcon + LCD_CPU_TRI1_REG);
+    writel(0x6720013f, myio.tcon + LCD_CPU_TRI2_REG);
+    writel(0x10617f00, myio.tcon + LCD_CPU_TRI3_REG);
+    writel(0x0, myio.tcon + LCD_CPU_TRI4_REG);
+    writel(0x0, myio.tcon + LCD_CPU_TRI5_REG);
+    writel(0x0, myio.tcon + LCD_SYNC_CTL_REG);
+    writel(0x0, myio.tcon + LCD_SYNC_POS_REG);
+
+    printk("======\n");
+    printk("PLL_CPU_CTRL_REG = 0x%x\n", readl(myio.ccu + 0x0000));
+    printk("PLL_PERI_CTRL_REG = 0x%x\n", readl(myio.ccu + 0x0020));
+    printk("PLL_VIDEO0_CTRL_REG = 0x%x\n", readl(myio.ccu + 0x0040));
+    printk("PLL_VIDEO1_CTRL_REG = 0x%x\n", readl(myio.ccu + 0x0048));
+    printk("G2D_CLK_REG = 0x%x\n", readl(myio.ccu + 0x0630));
+    printk("G2D_BGR_REG = 0x%x\n", readl(myio.ccu + 0x063C));
+    printk("TCONLCD_CLK_REG = 0x%x\n", readl(myio.ccu + 0x0B60));
+    printk("TCONLCD_BGR_REG = 0x%x\n", readl(myio.ccu + 0x0B7C));
+
+    printk("LCD_GCTL_REG = 0x%x\n", readl(myio.tcon + 0x000));
+    printk("LCD_GINT0_REG = 0x%x\n", readl(myio.tcon + 0x004));
+    printk("LCD_GINT1_REG = 0x%x\n", readl(myio.tcon + 0x008));
+    printk("LCD_FRM_CTL_REG = 0x%x\n", readl(myio.tcon + 0x010));
+    printk("LCD_FRM_SEED_REG-0 = 0x%x\n", readl(myio.tcon + 0x0014 + 0 * 0x04));
+    printk("LCD_FRM_SEED_REG-1 = 0x%x\n", readl(myio.tcon + 0x0014 + 1 * 0x04));
+    printk("LCD_FRM_SEED_REG-2 = 0x%x\n", readl(myio.tcon + 0x0014 + 2 * 0x04));
+    printk("LCD_FRM_SEED_REG-3 = 0x%x\n", readl(myio.tcon + 0x0014 + 3 * 0x04));
+    printk("LCD_FRM_SEED_REG-4 = 0x%x\n", readl(myio.tcon + 0x0014 + 4 * 0x04));
+    printk("LCD_FRM_SEED_REG-5 = 0x%x\n", readl(myio.tcon + 0x0014 + 5 * 0x04));
+    printk("LCD_FRM_TAB_REG-0 = 0x%x\n", readl(myio.tcon + 0x002C + 0 * 0x04));
+    printk("LCD_FRM_TAB_REG-1 = 0x%x\n", readl(myio.tcon + 0x002C + 1 * 0x04));
+    printk("LCD_FRM_TAB_REG-2 = 0x%x\n", readl(myio.tcon + 0x002C + 2 * 0x04));
+    printk("LCD_FRM_TAB_REG-3 = 0x%x\n", readl(myio.tcon + 0x002C + 3 * 0x04));
+    printk("LCD_3D_FIFO_REG = 0x%x\n", readl(myio.tcon + 0x003C));
+    printk("LCD_CTL_REG = 0x%x\n", readl(myio.tcon + 0x0040));
+    printk("LCD_DCLK_REG = 0x%x\n", readl(myio.tcon + 0x0044));
+    printk("LCD_BASIC0_REG = 0x%x\n", readl(myio.tcon + 0x0048));
+    printk("LCD_BASIC1_REG = 0x%x\n", readl(myio.tcon + 0x004c));
+    printk("LCD_BASIC2_REG = 0x%x\n", readl(myio.tcon + 0x0050));
+    printk("LCD_BASIC3_REG = 0x%x\n", readl(myio.tcon + 0x0054));
+    printk("LCD_HV_IF_REG = 0x%x\n", readl(myio.tcon + 0x0058));
+    printk("LCD_CPU_IF_REG = 0x%x\n", readl(myio.tcon + 0x0060));
+    printk("LCD_CPU_WR_REG = 0x%x\n", readl(myio.tcon + 0x0064));
+    printk("LCD_CPU_RD0_REG = 0x%x\n", readl(myio.tcon + 0x0068));
+    printk("LCD_CPU_RD1_REG = 0x%x\n", readl(myio.tcon + 0x006c));
+    printk("LCD_LVDS_IF_REG = 0x%x\n", readl(myio.tcon + 0x0084));
+    printk("LCD_IO_POL_REG = 0x%x\n", readl(myio.tcon + 0x0088));
+    printk("LCD_IO_TRI_REG = 0x%x\n", readl(myio.tcon + 0x008c));
+    printk("LCD_CEU_CTL_REG = 0x%x\n", readl(myio.tcon + 0x0100));
+    printk("LCD_CPU_TRI0_REG = 0x%x\n", readl(myio.tcon + 0x0160));
+    printk("LCD_CPU_TRI1_REG = 0x%x\n", readl(myio.tcon + 0x0164));
+    printk("LCD_CPU_TRI2_REG = 0x%x\n", readl(myio.tcon + 0x0168));
+    printk("LCD_CPU_TRI3_REG = 0x%x\n", readl(myio.tcon + 0x016c));
+    printk("LCD_CPU_TRI4_REG = 0x%x\n", readl(myio.tcon + 0x0170));
+    printk("LCD_CPU_TRI5_REG = 0x%x\n", readl(myio.tcon + 0x0174));
+    printk("LCD_SYNC_CTL_REG = 0x%x\n", readl(myio.tcon + 0x0230));
+    printk("LCD_SYNC_POS_REG = 0x%x\n", readl(myio.tcon + 0x0234));
+
+    printk("PD_CFG0 = 0x%x\n", readl(myio.gpio + 0x0090));
+    printk("PD_CFG1 = 0x%x\n", readl(myio.gpio + 0x0094));
+    printk("PD_CFG2 = 0x%x\n", readl(myio.gpio + 0x0098));
+    printk("======\n");
+
+#if 1
+    {
+        int i = 0;
+
+        for (i = 0; i < 320 * 240; i++) {
+            tcon_write(1, 0x7e0);
+        }
+    }
+#endif
+
+    return 0;
 }
 
 static void lcd_reset(void)
@@ -136,12 +356,36 @@ static void lcd_reset(void)
     writel(r, myio.gpio + PD_DAT);
     mdelay(150);
 
-    r |= LCD_RST;
+    r |= LCD_RST | LCD_BL;
     writel(r, myio.gpio + PD_DAT);
     mdelay(150);
 }
 
-static int lcd_init(struct myfb_par *mypar)
+static void gpio_init(void)
+{
+    uint32_t r = 0; 
+
+    r = readl(myio.gpio + PD_CFG0);
+    r = 0x22222221;
+    writel(r, myio.gpio + PD_CFG0);
+
+    r = readl(myio.gpio + PD_CFG1);
+    r &= 0x000000f0;
+    r |= 0x22222202;
+    writel(r, myio.gpio + PD_CFG1);
+
+    r = readl(myio.gpio + PD_CFG2);
+    r &= 0xfff000000;
+    r |= 0x000222222;
+    writel(r, myio.gpio + PD_CFG2);
+
+    r = readl(myio.gpio + PD_PULL1);
+    r &= 0xfffff0ff;
+    r |= 0x00000500;
+    writel(r, myio.gpio + PD_PULL1);
+}
+
+static int lcd_init(void)
 {
     writel(0x11111111, myio.gpio + PD_CFG0);
     writel(0x11111111, myio.gpio + PD_CFG1);
@@ -351,7 +595,7 @@ static void timer_handler(struct timer_list *timer)
         uint16_t *p = mypar->vram_virt;
 
         for (i = 0; i < 320 * 240; i++) {
-            lcd_write_dat(*p++);
+            tcon_write(1, *p++);
         }
     }
 
@@ -432,15 +676,18 @@ static int myfb_probe(struct platform_device *device)
     }
     info->cmap.len = 32;
 
+    mypar = par;
     myfb_var.activate = FB_ACTIVATE_FORCE;
     fb_set_var(info, &myfb_var);
     dev_set_drvdata(&device->dev, info);
     if (register_framebuffer(info) < 0) {
         return -EINVAL;
     }
-    lcd_init(par);
 
-    mypar = par;
+    lcd_init();
+    gpio_init();
+    tcon_init();
+
     timer_setup(&my_timer, timer_handler, 0);
     mod_timer(&my_timer, jiffies + msecs_to_jiffies(1000));
 
@@ -511,59 +758,17 @@ static struct platform_driver fb_driver = {
 };
 
 static void sunxi_ioremap(void)
-{    
+{
     myio.ccu = (uint8_t *)ioremap(CCU_BASE, 4096);
     myio.gpio = (uint8_t *)ioremap(GPIO_BASE, 4096);
-    myio.lcdc = (uint8_t *)ioremap(LCDC_BASE, 4096);
-
-    printk("%s\n", __func__);
-
-    writel((1 << 31) | (1 << 24) | (1 << 16) | (1 << 0), myio.ccu + G2D_CLK_REG);
-    writel((1 << 16) | (1 << 0), myio.ccu + G2D_BGR_REG);
-
-    writel((1 << 31) | (1 << 24), myio.ccu + TCONLCD_CLK_REG);
-    writel((1 << 16) | (1 << 0), myio.ccu + TCONLCD_BGR_REG);
-
-    writel((1 << 16) | (1 << 0), myio.ccu + HSTIMER_BGR_REG);
-
-
-    printk("======\n");
-    printk("PLL_CPU_CTRL = 0x%x\n", readl(myio.ccu + PLL_CPU_CTRL_REG));
-    printk("PLL_PERI_CTRL = 0x%x\n", readl(myio.ccu + PLL_PERI_CTRL_REG));
-    printk("PLL_VIDEO0_CTRL = 0x%x\n", readl(myio.ccu + PLL_VIDEO0_CTRL_REG));
-    printk("PLL_VIDEO1_CTRL = 0x%x\n", readl(myio.ccu + PLL_VIDEO1_CTRL_REG));
-    printk("DRAM_BGR_REG = 0x%x\n", readl(myio.ccu + DRAM_BGR_REG));
-    printk("G2D_CLK_REG = 0x%x\n", readl(myio.ccu + G2D_CLK_REG));
-    printk("G2D_BGR_REG = 0x%x\n", readl(myio.ccu + G2D_BGR_REG));
-    printk("HSTIMER_BGR_REG = 0x%x\n", readl(myio.ccu + HSTIMER_BGR_REG));
-    printk("TCONLCD_CLK_REG = 0x%x\n", readl(myio.ccu + TCONLCD_CLK_REG));
-    printk("TCONLCD_BGR_REG = 0x%x\n", readl(myio.ccu + TCONLCD_BGR_REG));
-    printk("RISC_CLK_REG = 0x%x\n", readl(myio.ccu + RISC_CLK_REG));
-    printk("RISC_GATING_REG = 0x%x\n", readl(myio.ccu + RISC_GATING_REG));
-    printk("RISC_CFG_BGR_REG = 0x%x\n", readl(myio.ccu + RISC_CFG_BGR_REG));
-    printk("======\n");
-
-/*
-#define PLL_CPU_REG         0x0000
-#define PLL_PERI_REG        0x0020
-#define PLL_VIDEO0_REG      0x0040
-#define PLL_VIDEO1_REG      0x0048
-#define DRAM_BGR_REG        0x080C
-#define G2D_CLK_REG         0x0630
-#define G2D_BGR_REG         0x063C
-#define TCONLCD_CLK_REG     0x0B60
-#define TCONLCD_BGR_REG     0x0B7C
-#define RISC_CLK_REG        0x0D00
-#define RISC_GATING_REG     0x0D04
-#define RISC_CFG_BGR_REG    0x0D0C
-*/
+    myio.tcon = (uint8_t *)ioremap(TCON_BASE, 4096);
 }
 
 static void sunxi_iounmap(void)
 {
     iounmap(myio.ccu);
     iounmap(myio.gpio);
-    iounmap(myio.lcdc);
+    iounmap(myio.tcon);
 }
 
 static int __init myfb_init(void)
@@ -581,7 +786,7 @@ static void __exit myfb_cleanup(void)
 module_init(myfb_init);
 module_exit(myfb_cleanup);
 
-MODULE_DESCRIPTION("framebuffer driver for Gaviar handheld");
+MODULE_DESCRIPTION("Framebuffer driver for Gaviar handheld");
 MODULE_AUTHOR("Steward Fu <steward.fu@gmail.com>");
 MODULE_LICENSE("GPL");
 

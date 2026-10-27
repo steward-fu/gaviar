@@ -1,0 +1,40 @@
+#include <x.h>
+#include <sandbox.h>
+
+void * sandbox_malloc(size_t size)
+{
+	return malloc(size);
+}
+
+void * sandbox_memalign(size_t align, size_t size)
+{
+	return memalign(align, size);
+}
+
+void * sandbox_realloc(void * ptr, size_t size)
+{
+	return realloc(ptr, size);
+}
+
+void * sandbox_calloc(size_t nmemb, size_t size)
+{
+	return calloc(nmemb, size);
+}
+
+void sandbox_free(void * ptr)
+{
+	free(ptr);
+}
+
+void sandbox_meminfo(size_t * mused, size_t * mfree)
+{
+#if __GLIBC_PREREQ(2, 33)
+	struct mallinfo2 mi = mallinfo2();
+#else
+	struct mallinfo mi = mallinfo();
+#endif
+	if(mused)
+		*mused = mi.uordblks;
+	if(mfree)
+		*mfree = mi.fordblks;
+}

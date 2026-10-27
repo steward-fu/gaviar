@@ -1,0 +1,597 @@
+{
+	"clk-fixed": { "name": "fix-losc", "rate": 32768 },
+	"clk-fixed": { "name": "rc-16m", "rate": 16000000 },
+	"clk-fixed": { "name": "rcosc-clk", "rate": 1400000 },
+	"clk-fixed": { "name": "ext-32k", "rate": 32768 },
+	"clk-fixed": { "name": "rc-hf", "rate": 8192000 },
+	"clk-fixed": { "name": "rccal-fake-parent", "rate": 32768 },
+	"clk-fixed": { "name": "osc26m", "rate": 26000000 },
+	"clk-fixed": { "name": "osc40m", "rate": 40000000 },
+	"clk-fixed": { "name": "osc24m", "rate": 24000000 },
+	"clk-fixed": { "name": "osc32m", "rate": 32000000 },
+	"clk-fixed": { "name": "osc24.576m", "rate": 24576000 },
+
+	"clk-mux@0x4004c484": {
+		"parent": [
+			{ "name": "osc26m", "value": 0 },
+			{ "name": "osc40m", "value": 1 },
+			{ "name": "osc24m", "value": 2 },
+			{ "name": "osc32m", "value": 3 },
+			{ "name": "osc24.576m", "value": 4 }
+		],
+		"name": "hosc", "shift": 0, "width": 3
+	},
+	"clk-fixed-factor": { "parent": "hosc", "name": "hosc-div32k", "mult": 1, "div": 1250 },
+	"clk-fixed-factor": { "parent": "rcosc-clk", "name": "rcosc-div32k", "mult": 1, "div": 32 },
+	"clk-fixed-factor": { "parent": "hosc", "name": "hosc-div2", "mult": 1, "div": 2 },
+
+	"clk-r128-pll": { "parent": "hosc", "name": "dpll1", "channel": 1 },
+	"clk-r128-pll": { "parent": "hosc", "name": "dpll2", "channel": 2 },
+	"clk-r128-pll": { "parent": "hosc", "name": "dpll3", "channel": 3 },
+	"clk-r128-pll": { "parent": "hosc", "name": "pll-audio", "channel": 4 },
+
+	"clk-fixed-factor": { "parent": "dpll1", "name": "rfip0-dpll", "mult": 1, "div": 12 },
+	"clk-fixed-factor": { "parent": "dpll3", "name": "rfip1-dpll", "mult": 1, "div": 12 },
+	"clk-fixed-factor": { "parent": "pll-audio", "name": "pll-audio2x", "mult": 1, "div": 2 },
+	"clk-fixed-factor": { "parent": "pll-audio", "name": "pll-audio1x", "mult": 1, "div": 4 },
+
+	"clk-fixed-factor": { "parent": "dpll1", "name": "dpll1-div4", "mult": 1, "div": 4 },
+	"clk-fixed-factor": { "parent": "dpll1", "name": "dpll1-div5", "mult": 1, "div": 5 },
+	"clk-fixed-factor": { "parent": "dpll1", "name": "dpll1-div6", "mult": 1, "div": 6 },
+	"clk-fixed-factor": { "parent": "dpll1", "name": "dpll1-div7", "mult": 1, "div": 7 },
+	"clk-fixed-factor": { "parent": "dpll1", "name": "dpll1-div8", "mult": 1, "div": 8 },
+	"clk-fixed-factor": { "parent": "dpll1", "name": "dpll1-div39", "mult": 1, "div": 39 },
+	"clk-fixed-factor": { "parent": "dpll1", "name": "dpll1-div85", "mult": 1, "div": 85 },
+	"clk-fixed-factor": { "parent": "dpll3", "name": "dpll3-div4", "mult": 1, "div": 4 },
+	"clk-fixed-factor": { "parent": "dpll3", "name": "dpll3-div5", "mult": 1, "div": 5 },
+	"clk-fixed-factor": { "parent": "dpll3", "name": "dpll3-div6", "mult": 1, "div": 6 },
+	"clk-fixed-factor": { "parent": "dpll3", "name": "dpll3-div7", "mult": 1, "div": 7 },
+	"clk-fixed-factor": { "parent": "dpll3", "name": "dpll3-div8", "mult": 1, "div": 8 },
+
+	"clk-gate@0x4004c4a4": {"parent": "hosc", "name": "ck1-usb", "shift": 31, "invert": false },
+	"clk-mux@0x4004c4a4": {
+		"parent": [
+			{ "name": "dpll1-div85", "value": 0 },
+			{ "name": "dpll1-div39", "value": 1 }
+		],
+		"name": "mux-ck1-aud", "shift": 24, "width": 1
+	},
+	"clk-gate@0x4004c4a4": {"parent": "mux-ck1-aud", "name": "ck1-aud", "shift": 27, "invert": false },
+
+	"clk-mux@0x4004c4a4": {
+		"parent": [
+			{ "name": "dpll1-div7", "value": 0 },
+			{ "name": "dpll1-div6", "value": 1 },
+			{ "name": "dpll1-div5", "value": 2 }
+		],
+		"name": "mux-ck1-dev", "shift": 20, "width": 2,
+		"default": { "parent": "dpll1-div5" }
+	},
+	"clk-gate@0x4004c4a4": {"parent": "mux-ck1-dev", "name": "ck1-dev", "shift": 23, "invert": false },
+
+	"clk-mux@0x4004c4a4": {
+		"parent": [
+			{ "name": "dpll1-div8", "value": 0 },
+			{ "name": "dpll1-div7", "value": 1 },
+			{ "name": "dpll1-div6", "value": 2 },
+			{ "name": "dpll1-div5", "value": 3 },
+			{ "name": "dpll1-div4", "value": 4 }
+		],
+		"name": "mux-ck1-m33", "shift": 0, "width": 3,
+		"default": { "parent": "dpll1-div5" }
+	},
+	"clk-gate@0x4004c4a4": {"parent": "mux-ck1-m33", "name": "ck1-m33", "shift": 3, "invert": false },
+
+	"clk-mux@0x4004c4a8": {
+		"parent": [
+			{ "name": "dpll3-div6", "value": 0 },
+			{ "name": "dpll3-div5", "value": 1 },
+			{ "name": "dpll3-div4", "value": 2 }
+		],
+		"name": "mux-ck3-dev", "shift": 20, "width": 2
+	},
+	"clk-gate@0x4004c4a8": {"parent": "mux-ck3-dev", "name": "ck3-dev", "shift": 23, "invert": false },
+
+	"clk-mux@0x4004c4a8": {
+		"parent": [
+			{ "name": "dpll3-div8", "value": 0 },
+			{ "name": "dpll3-div7", "value": 1 },
+			{ "name": "dpll3-div6", "value": 2 },
+			{ "name": "dpll3-div5", "value": 3 },
+			{ "name": "dpll3-div4", "value": 4 }
+		],
+		"name": "mux-ck3-m33", "shift": 0, "width": 3
+	},
+	"clk-gate@0x4004c4a8": {"parent": "mux-ck3-m33", "name": "ck3-m33", "shift": 3, "invert": false },
+
+	"clk-mux@0x4004c4e0": {
+		"parent": [
+			{ "name": "ck1-dev", "value": 0 },
+			{ "name": "ck3-dev", "value": 1 }
+		],
+		"name": "ck-dev", "shift": 16, "width": 1
+	},
+	"clk-divider@0x4004c4e0": { "parent": "ck-dev", "name": "device-clk", "shift": 0, "width": 4, "divider-one-based": true },
+
+	"clk-mux@0x4004c4e0": {
+		"parent": [
+			{ "name": "ck1-m33", "value": 0 },
+			{ "name": "ck3-m33", "value": 1 }
+		],
+		"name": "ck-m33", "shift": 19, "width": 1
+	},
+	"clk-divider@0x4004c4e0": { "parent": "ck-m33", "name": "sys", "shift": 8, "width": 4, "divider-one-based": true },
+
+	"clk-divider@0x4004c4dc": { "parent": "rc-hf", "name": "aud-rco-div", "shift": 0, "width": 3, "divider-one-based": true },
+
+	"clk-mux@0x4004c4e0": {
+		"parent": [
+			{ "name": "hosc", "value": 0 },
+			{ "name": "fix-losc", "value": 1 },
+			{ "name": "sys", "value": 2 },
+			{ "name": "aud-rco-div", "value": 3 }
+		],
+		"name": "ar200a-f", "shift": 12, "width": 2
+	},
+	"clk-ratio@0x4004c4e0": { "parent": "hosc", "name": "hfclk-div", "shift": 4, "width": 2 },
+	"clk-ratio@0x4004c4e0": { "parent": "fix-losc", "name": "lfclk-div", "shift": 4, "width": 2 },
+	"clk-ratio@0x4004c4e0": { "parent": "ar200a-f", "name": "ahb-div", "shift": 4, "width": 2 },
+	"clk-mux@0x4004c4e0": {
+		"parent": [
+			{ "name": "hfclk-div", "value": 0 },
+			{ "name": "lfclk-div", "value": 1 },
+			{ "name": "ahb-div", "value": 2 },
+			{ "name": "aud-rco-div", "value": 3 }
+		],
+		"name": "apb", "shift": 6, "width": 2
+	},
+
+	"clk-gate@0x4004c4cc": {"parent": "hosc", "name": "ble-32m", "shift": 17, "invert": false },
+	"clk-gate@0x4004c4cc": {"parent": "hosc", "name": "ble-48m", "shift": 16, "invert": false },
+	"clk-gate@0x4004c4cc": {"parent": "hosc", "name": "gpio-gate", "shift": 11, "invert": false },
+	"clk-gate@0x4004c4cc": {"parent": "hosc", "name": "bus-codec-dac", "shift": 10, "invert": false },
+	"clk-gate@0x4004c4cc": {"parent": "hosc", "name": "rccal", "shift": 8, "invert": false },
+	"clk-gate@0x4004c4cc": {"parent": "hosc", "name": "bus-codec-adc", "shift": 5, "invert": false },
+	"clk-gate@0x4004c4cc": {"parent": "hosc", "name": "dmic-bus", "shift": 3, "invert": false },
+	"clk-gate@0x4004c4cc": {"parent": "hosc", "name": "gpadc", "shift": 2, "invert": false },
+	"clk-gate@0x4004c4cc": {"parent": "hosc", "name": "lpuart1-wkup", "shift": 1, "invert": false },
+	"clk-gate@0x4004c4cc": {"parent": "hosc", "name": "lpuart0-wkup", "shift": 0, "invert": false },
+
+	"clk-gate@0x40050080": {"parent": "ext-32k", "name": "osc32k-en", "shift": 31, "invert": false },
+	"clk-gate@0x40050080": {"parent": "fix-losc", "name": "rc32k-en", "shift": 30, "invert": false },
+	"clk-gate@0x40050080": {"parent": "rc-hf", "name": "rc-hf-en", "shift": 29, "invert": false },
+	"clk-gate@0x40050144": {"parent": "rccal-fake-parent", "name": "rccal-32k", "shift": 29, "invert": false },
+	"clk-gate@0x40050144": {"parent": "rcosc-div32k", "name": "rco-wup-en", "shift": 16, "invert": false },
+	"clk-mux@0x40050080": {
+		"parent": [
+			{ "name": "rcosc-div32k", "value": 0 },
+			{ "name": "osc32k-en", "value": 1 }
+		],
+		"name": "lf-sel", "shift": 24, "width": 1
+	},
+	"clk-mux@0x40050080": {
+		"parent": [
+			{ "name": "lf-sel", "value": 0 },
+			{ "name": "rccal-32k", "value": 1 }
+		],
+		"name": "sys-32k-sel", "shift": 28, "width": 1
+	},
+	"clk-mux@0x40050080": {
+		"parent": [
+			{ "name": "lf-sel", "value": 0 },
+			{ "name": "rccal-32k", "value": 1 }
+		],
+		"name": "ble-sel", "shift": 27, "width": 1
+	},
+	"clk-mux@0x40050080": {
+		"parent": [
+			{ "name": "lf-sel", "value": 0 },
+			{ "name": "rccal-32k", "value": 1 },
+			{ "name": "hosc-div32k", "value": 2 }
+		],
+		"name": "sysrtc32k", "shift": 25, "width": 2
+	},
+	"clk-mux@0x40050080": {
+		"parent": [
+			{ "name": "rcosc-div32k", "value": 0 },
+			{ "name": "osc32k-en", "value": 1 },
+			{ "name": "rccal-32k", "value": 2 },
+			{ "name": "hosc", "value": 3 }
+		],
+		"name": "pad", "shift": 1, "width": 2
+	},
+	"clk-divider@0x40050080": { "parent": "pad", "name": "div-pad", "shift": 3, "width": 13, "divider-one-based": true },
+	"clk-gate@0x40050080": {"parent": "div-pad", "name": "pad-out", "shift": 0, "invert": false },
+
+	"clk-mux@0x4005014c": {
+		"parent": [
+			{ "name": "rc-hf-en", "value": 0 },
+			{ "name": "ble-32m", "value": 1 }
+		],
+		"name": "div", "shift": 4, "width": 1
+	},
+	"clk-gate@0x4005014c": {"parent": "div", "name": "32k-auto-en-switch", "shift": 0, "invert": false },
+
+	"clk-gate@0x4003c004": {"parent": "hosc-div2", "name": "bus-ehci0", "shift": 31, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c004": {"parent": "hosc-div2", "name": "bus-ohci0", "shift": 30, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c004": {"parent": "hosc-div2", "name": "bus-csi-jpe", "shift": 29, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c004": {"parent": "hosc", "name": "bus-ledc", "shift": 28, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c004": {"parent": "hosc", "name": "bus-otg", "shift": 27, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c004": {"parent": "hosc", "name": "bus-smcard", "shift": 26, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c004": {"parent": "hosc", "name": "bus-hspsram-ctrl", "shift": 21, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c004": {"parent": "hosc", "name": "bus-irrx", "shift": 16, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c004": {"parent": "hosc", "name": "bus-irtx", "shift": 15, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c004": {"parent": "apb", "name": "bus-pwm", "shift": 14, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c004": {"parent": "apb", "name": "bus-twi1", "shift": 11, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c004": {"parent": "apb", "name": "bus-twi0", "shift": 10, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c004": {"parent": "apb", "name": "bus-uart2", "shift": 8, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c004": {"parent": "apb", "name": "bus-uart1", "shift": 7, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c004": {"parent": "apb", "name": "bus-uart0", "shift": 6, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c004": {"parent": "apb", "name": "bus-sdc0", "shift": 4, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c004": {"parent": "hosc-div2", "name": "bus-spi1", "shift": 1, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c004": {"parent": "hosc-div2", "name": "bus-spi0", "shift": 0, "invert": false, "default": { "enable": true } },
+
+	"clk-gate@0x4003c008": {"parent": "hosc-div2", "name": "bus-monitor", "shift": 28, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c008": {"parent": "hosc-div2", "name": "bus-g2d", "shift": 27, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c008": {"parent": "hosc-div2", "name": "bus-de", "shift": 26, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c008": {"parent": "hosc-div2", "name": "bus-display", "shift": 25, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c008": {"parent": "hosc-div2", "name": "bus-lcd", "shift": 24, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c008": {"parent": "hosc-div2", "name": "bus-bt-core", "shift": 21, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c008": {"parent": "hosc-div2", "name": "bus-wlan-ctrl", "shift": 20, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c008": {"parent": "hosc-div2", "name": "bus-trng", "shift": 14, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c008": {"parent": "hosc-div2", "name": "bus-spc", "shift": 13, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c008": {"parent": "hosc-div2", "name": "bus-ss", "shift": 12, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c008": {"parent": "hosc-div2", "name": "bus-timer", "shift": 11, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c008": {"parent": "hosc", "name": "bus-spinlock", "shift": 10, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c008": {"parent": "hosc", "name": "bus-dma1", "shift": 7, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c008": {"parent": "hosc", "name": "bus-dma0", "shift": 6, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c008": {"parent": "apb", "name": "bus-spdif", "shift": 2, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c008": {"parent": "hosc", "name": "bus-i2s", "shift": 1, "invert": false, "default": { "enable": true } },
+
+	"clk-gate@0x4003c014": {"parent": "hosc", "name": "riscv-cfg", "shift": 19, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c014": {"parent": "hosc", "name": "riscv-msgbox", "shift": 18, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c014": {"parent": "hosc", "name": "dsp-cfg", "shift": 11, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c014": {"parent": "hosc", "name": "dsp-msgbox", "shift": 10, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c014": {"parent": "hosc", "name": "cpu-msgbox", "shift": 1, "invert": false, "default": { "enable": true } },
+
+	"clk-gate@0x4003c01c": {"parent": "hosc", "name": "mbus-de", "shift": 9, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c01c": {"parent": "hosc", "name": "mbus-g2d", "shift": 8, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c01c": {"parent": "hosc", "name": "mbus-csi", "shift": 7, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c01c": {"parent": "hosc", "name": "mbus-dma1", "shift": 6, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c01c": {"parent": "hosc", "name": "mbus-dma0", "shift": 5, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c01c": {"parent": "hosc", "name": "mbus-usb", "shift": 4, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c01c": {"parent": "hosc", "name": "mbus-ce", "shift": 3, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c01c": {"parent": "hosc", "name": "mbus-dsp", "shift": 2, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c01c": {"parent": "hosc", "name": "mbus-riscv", "shift": 1, "invert": false, "default": { "enable": true } },
+	"clk-gate@0x4003c01c": {"parent": "hosc", "name": "mbus-cpu", "shift": 0, "invert": false, "default": { "enable": true } },
+
+	"clk-mux@0x4003c05c": {
+		"parent": [
+			{ "name": "hosc", "value": 0 },
+			{ "name": "device-clk", "value": 1 },
+			{ "name": "fix-losc", "value": 2 }
+		],
+		"name": "mux-pclk-spc", "shift": 24, "width": 2
+	},
+	"clk-divider@0x4003c05c": { "parent": "mux-pclk-spc", "name": "div-pclk-spc", "shift": 0, "width": 4, "divider-one-based": true },
+	"clk-ratio@0x4003c05c": { "parent": "div-pclk-spc", "name": "pclk-spc", "shift": 16, "width": 2 },
+
+	"clk-mux@0x4003c020": {
+		"parent": [
+			{ "name": "hosc", "value": 0 },
+			{ "name": "device-clk", "value": 1 }
+		],
+		"name": "mux-spi0", "shift": 24, "width": 2
+	},
+	"clk-divider@0x4003c020": { "parent": "mux-spi0", "name": "div-spi0", "shift": 0, "width": 4, "divider-one-based": true },
+	"clk-ratio@0x4003c020": { "parent": "div-spi0", "name": "ratio-spi0", "shift": 16, "width": 2 },
+	"clk-gate@0x4003c020": {"parent": "ratio-spi0", "name": "spi0", "shift": 31, "invert": false },
+
+	"clk-mux@0x4003c024": {
+		"parent": [
+			{ "name": "hosc", "value": 0 },
+			{ "name": "device-clk", "value": 1 }
+		],
+		"name": "mux-spi1", "shift": 24, "width": 2
+	},
+	"clk-divider@0x4003c024": { "parent": "mux-spi1", "name": "div-spi1", "shift": 0, "width": 4, "divider-one-based": true },
+	"clk-ratio@0x4003c024": { "parent": "div-spi1", "name": "ratio-spi1", "shift": 16, "width": 2 },
+	"clk-gate@0x4003c024": {"parent": "ratio-spi1", "name": "spi1", "shift": 31, "invert": false },
+
+	"clk-mux@0x4003c028": {
+		"parent": [
+			{ "name": "hosc", "value": 0 },
+			{ "name": "device-clk", "value": 1 }
+		],
+		"name": "mux-sdc0", "shift": 24, "width": 2
+	},
+	"clk-divider@0x4003c028": { "parent": "mux-sdc0", "name": "div-sdc0", "shift": 0, "width": 4, "divider-one-based": true },
+	"clk-ratio@0x4003c028": { "parent": "div-sdc0", "name": "ratio-sdc0", "shift": 16, "width": 2 },
+	"clk-gate@0x4003c028": {"parent": "ratio-sdc0", "name": "sdc0", "shift": 31, "invert": false },
+
+	"clk-mux@0x4003c02c": {
+		"parent": [
+			{ "name": "hosc", "value": 0 },
+			{ "name": "device-clk", "value": 1 }
+		],
+		"name": "mux-ss", "shift": 24, "width": 2
+	},
+	"clk-divider@0x4003c02c": { "parent": "mux-ss", "name": "div-ss", "shift": 0, "width": 4, "divider-one-based": true },
+	"clk-ratio@0x4003c02c": { "parent": "div-ss", "name": "ratio-ss", "shift": 16, "width": 2 },
+	"clk-gate@0x4003c02c": {"parent": "ratio-ss", "name": "ss", "shift": 31, "invert": false },
+
+	"clk-mux@0x4003c030": {
+		"parent": [
+			{ "name": "hosc", "value": 0 },
+			{ "name": "device-clk", "value": 1 }
+		],
+		"name": "mux-csi-jpe", "shift": 24, "width": 2
+	},
+	"clk-divider@0x4003c030": { "parent": "mux-csi-jpe", "name": "div-csi-jpe", "shift": 0, "width": 4, "divider-one-based": true },
+	"clk-ratio@0x4003c030": { "parent": "div-csi-jpe", "name": "ratio-csi-jpe", "shift": 16, "width": 2 },
+	"clk-gate@0x4003c030": {"parent": "ratio-csi-jpe", "name": "csi-jpe", "shift": 31, "invert": false },
+
+	"clk-mux@0x4003c034": {
+		"parent": [
+			{ "name": "hosc", "value": 0 },
+			{ "name": "device-clk", "value": 1 }
+		],
+		"name": "mux-ledc", "shift": 24, "width": 2
+	},
+	"clk-divider@0x4003c034": { "parent": "mux-ledc", "name": "div-ledc", "shift": 0, "width": 4, "divider-one-based": true },
+	"clk-ratio@0x4003c034": { "parent": "div-ledc", "name": "ratio-ledc", "shift": 16, "width": 2 },
+	"clk-gate@0x4003c034": {"parent": "ratio-ledc", "name": "ledc", "shift": 31, "invert": false },
+
+	"clk-mux@0x4003c038": {
+		"parent": [
+			{ "name": "hosc", "value": 0 },
+			{ "name": "fix-losc", "value": 1 }
+		],
+		"name": "mux-irrx", "shift": 24, "width": 2
+	},
+	"clk-divider@0x4003c038": { "parent": "mux-irrx", "name": "div-irrx", "shift": 0, "width": 4, "divider-one-based": true },
+	"clk-ratio@0x4003c038": { "parent": "div-irrx", "name": "ratio-irrx", "shift": 16, "width": 2 },
+	"clk-gate@0x4003c038": {"parent": "ratio-irrx", "name": "irrx", "shift": 31, "invert": false },
+
+	"clk-mux@0x4003c03c": {
+		"parent": [
+			{ "name": "hosc", "value": 0 },
+			{ "name": "fix-losc", "value": 1 }
+		],
+		"name": "mux-irtx", "shift": 24, "width": 2
+	},
+	"clk-divider@0x4003c03c": { "parent": "mux-irtx", "name": "div-irtx", "shift": 0, "width": 4, "divider-one-based": true },
+	"clk-ratio@0x4003c03c": { "parent": "div-irtx", "name": "ratio-irtx", "shift": 16, "width": 2 },
+	"clk-gate@0x4003c03c": {"parent": "ratio-irtx", "name": "irtx", "shift": 31, "invert": false },
+
+	"clk-mux@0x4003c040": {
+		"parent": [
+			{ "name": "hosc", "value": 0 },
+			{ "name": "fix-losc", "value": 1 }
+		],
+		"name": "mux-systick-ref", "shift": 24, "width": 2
+	},
+	"clk-divider@0x4003c040": { "parent": "mux-systick-ref", "name": "div-systick-ref", "shift": 0, "width": 4, "divider-one-based": true },
+	"clk-ratio@0x4003c040": { "parent": "div-systick-ref", "name": "ratio-systick-ref", "shift": 16, "width": 2 },
+	"clk-gate@0x4003c040": {"parent": "ratio-systick-ref", "name": "systick-ref", "shift": 31, "invert": false },
+	"clk-gate@0x4003c044": {"parent": "hosc", "name": "systick-noref", "shift": 25, "invert": false },
+	"clk-gate@0x4003c044": {"parent": "hosc", "name": "systick-skew", "shift": 24, "invert": false },
+
+	"clk-mux@0x4003c050": {
+		"parent": [
+			{ "name": "hosc", "value": 0 },
+			{ "name": "device-clk", "value": 1 }
+		],
+		"name": "mux-csi-mclk", "shift": 24, "width": 2
+	},
+	"clk-divider@0x4003c050": { "parent": "mux-csi-mclk", "name": "div-csi-mclk", "shift": 0, "width": 4, "divider-one-based": true },
+	"clk-ratio@0x4003c050": { "parent": "div-csi-mclk", "name": "ratio-csi-mclk", "shift": 16, "width": 2 },
+	"clk-gate@0x4003c050": {"parent": "ratio-csi-mclk", "name": "csi-mclk", "shift": 31, "invert": false },
+
+	"clk-mux@0x4003c054": {
+		"parent": [
+			{ "name": "hosc", "value": 0 },
+			{ "name": "device-clk", "value": 1 }
+		],
+		"name": "mux-flash-spi", "shift": 24, "width": 2
+	},
+	"clk-divider@0x4003c054": { "parent": "mux-flash-spi", "name": "div-flash-spi", "shift": 0, "width": 4, "divider-one-based": true },
+	"clk-ratio@0x4003c054": { "parent": "div-flash-spi", "name": "ratio-flash-spi", "shift": 16, "width": 2 },
+	"clk-gate@0x4003c054": {"parent": "ratio-flash-spi", "name": "flash-spi", "shift": 31, "invert": false },
+
+	"clk-mux@0x4003c074": {
+		"parent": [
+			{ "name": "hosc", "value": 0 },
+			{ "name": "device-clk", "value": 1 }
+		],
+		"name": "mux-g2d", "shift": 24, "width": 2
+	},
+	"clk-divider@0x4003c074": { "parent": "mux-g2d", "name": "div-g2d", "shift": 0, "width": 4, "divider-one-based": true },
+	"clk-ratio@0x4003c074": { "parent": "div-g2d", "name": "ratio-g2d", "shift": 16, "width": 2 },
+	"clk-gate@0x4003c074": {"parent": "ratio-g2d", "name": "g2d", "shift": 31, "invert": false },
+
+	"clk-mux@0x4003c078": {
+		"parent": [
+			{ "name": "hosc", "value": 0 },
+			{ "name": "device-clk", "value": 1 }
+		],
+		"name": "mux-de", "shift": 24, "width": 2
+	},
+	"clk-divider@0x4003c078": { "parent": "mux-de", "name": "div-de", "shift": 0, "width": 4, "divider-one-based": true },
+	"clk-ratio@0x4003c078": { "parent": "div-de", "name": "ratio-de", "shift": 16, "width": 2 },
+	"clk-gate@0x4003c078": {"parent": "ratio-de", "name": "de", "shift": 31, "invert": false },
+
+	"clk-mux@0x4003c07c": {
+		"parent": [
+			{ "name": "hosc", "value": 0 },
+			{ "name": "device-clk", "value": 1 }
+		],
+		"name": "mux-lcd", "shift": 24, "width": 2
+	},
+	"clk-divider@0x4003c07c": { "parent": "mux-lcd", "name": "div-lcd", "shift": 0, "width": 4, "divider-one-based": true },
+	"clk-ratio@0x4003c07c": { "parent": "div-lcd", "name": "ratio-lcd", "shift": 16, "width": 2 },
+	"clk-gate@0x4003c07c": {"parent": "ratio-lcd", "name": "lcd", "shift": 31, "invert": false },
+
+	"clk-link": { "parent": "hosc", "name": "timer0" },
+	"clk-link": { "parent": "hosc", "name": "timer1" },
+	"clk-link": { "parent": "hosc", "name": "uart0" },
+	"clk-link": { "parent": "hosc", "name": "uart1" },
+	"clk-link": { "parent": "hosc", "name": "uart2" },
+	"clk-fixed": { "name": "wdg", "rate": 32768 },
+
+	"reset-r128@0x4003c00c": { "reset-base":   0, "reset-count": 32 },
+	"reset-r128@0x4003c010": { "reset-base":  32, "reset-count": 32 },
+	"reset-r128@0x4003c018": { "reset-base":  64, "reset-count": 32 },
+	"reset-r128@0x4004c4c8": { "reset-base":  96, "reset-count": 32 },
+	"reset-r128@0x4004c4cc": { "reset-base": 128, "reset-count": 32 },
+	"reset-r128@0x400500c4": { "reset-base": 160, "reset-count": 32 },
+	"reset-r128@0x40050144": { "reset-base": 192, "reset-count": 32 },
+
+	"irq-r128@0x50000000": { "interrupt-base": 0, "interrupt-count": 256 },
+	"irq-r128-gpio@0x50000200": { "interrupt-base": 256, "interrupt-count":  30, "interrupt-parent":  131 },
+	"irq-r128-gpio@0x50000220": { "interrupt-base": 288, "interrupt-count":  16, "interrupt-parent":  132 },
+
+	"gpio-r128@0x4004a400": { "gpio-base":  0, "gpio-count": 30, "interrupt-offset": 256 },
+	"gpio-r128@0x4004a424": { "gpio-base": 32, "gpio-count": 16, "interrupt-offset": 288 },
+
+	"ce-r128-timer@0x40043000": {
+		"clock-name": "timer0",
+		"interrupt": 36
+	},
+
+	"cs-r128-timer@0x40043000": {
+		"clock-name": "timer1"
+	},
+
+	"regulator-r128@0x40050000": { "name": "dcdc",   "channel": 0 },
+	"regulator-r128@0x40050000": { "name": "rtcldo", "channel": 1 },
+	"regulator-r128@0x40050000": { "name": "extldo", "channel": 2 },
+	"regulator-r128@0x40050000": { "name": "aonldo", "channel": 3 },
+	"regulator-r128@0x40050000": { "name": "appldo", "channel": 4 },
+	"regulator-r128@0x40050000": { "name": "dspldo", "channel": 5 },
+
+	"uart-16550:0@0x40047000": {
+		"clock-name": "uart0",
+		"reset": 6,
+		"txd-gpio": 16,
+		"txd-gpio-config": 5,
+		"rxd-gpio": 17,
+		"rxd-gpio-config": 5,
+		"baud-rates": 115200,
+		"data-bits": 8,
+		"parity-bits": 0,
+		"stop-bits": 1
+	},
+
+	"uart-16550:1@0x40047400": {
+		"clock-name": "uart1",
+		"reset": 7,
+		"txd-gpio": 46,
+		"txd-gpio-config": 2,
+		"rxd-gpio": 47,
+		"rxd-gpio-config": 2,
+		"baud-rates": 115200,
+		"data-bits": 8,
+		"parity-bits": 0,
+		"stop-bits": 1
+	},
+
+	"uart-16550:2@0x40047800": {
+		"clock-name": "uart2",
+		"reset": 8,
+		"txd-gpio": 16,
+		"txd-gpio-config": 7,
+		"rxd-gpio": 17,
+		"rxd-gpio-config": 7,
+		"baud-rates": 115200,
+		"data-bits": 8,
+		"parity-bits": 0,
+		"stop-bits": 1,
+		"status": "disabled"
+	},
+
+	"i2c-r128:0@0x40049000": {
+		"clock-name": "bus-twi0",
+		"clock-frequency": 400000,
+		"reset": 10,
+		"sda-gpio": 24,
+		"sda-gpio-config": 6,
+		"scl-gpio": 23,
+		"scl-gpio-config": 6
+	},
+
+	"i2c-r128:1@0x40049400": {
+		"clock-name": "bus-twi1",
+		"clock-frequency": 400000,
+		"reset": 11,
+		"sda-gpio": 33,
+		"sda-gpio-config": 3,
+		"scl-gpio": 32,
+		"scl-gpio-config": 3
+	},
+
+	"spi-r128:0@0x40009000": {
+		"clock-name": "spi0",
+		"reset": 0,
+		"sclk-gpio": 45,
+		"sclk-gpio-config": 3,
+		"mosi-gpio": 42,
+		"mosi-gpio-config": 3,
+		"miso-gpio": 43,
+		"miso-gpio-config": 3,
+		"cs-gpio": 44,
+		"cs-gpio-config": 3
+	},
+
+	"spi-r128:1@0x4000f000": {
+		"clock-name": "spi1",
+		"reset": 1,
+		"sclk-gpio": 13,
+		"sclk-gpio-config": 6,
+		"mosi-gpio": 18,
+		"mosi-gpio-config": 6,
+		"miso-gpio": 21,
+		"miso-gpio-config": 6,
+		"cs-gpio": 12,
+		"cs-gpio-config": 6,
+		"status": "disabled"
+	},
+
+	"blk-spinor": {
+		"spi-bus": "spi-r128.0",
+		"chip-select": 0,
+		"mode": 0,
+		"speed": 50000000,
+		"partition": [
+			{ "name": "xboot",   "offset": 0,       "length": 6291456 },
+			{ "name": "reserve", "offset": 6291456, "length": 2097152 },
+			{ "name": "private", "offset": 8388608, "length": 0 }
+		]
+	},
+
+	"wdg-r128@0x40029000": {
+		"clock-name": "wdg"
+	},
+
+	"ledstrip-r128@0x40048000": {
+		"clock-name": "ledc",
+		"reset": 28,
+		"gpio": 13,
+		"gpio-config": 7,
+		"output-mode": 0,
+		"reset-ns": 300000,
+		"t1h-ns": 1000,
+		"t1l-ns": 250,
+		"t0h-ns": 250,
+		"t0l-ns": 1000,
+		"wait-time0-ns": 84,
+		"wait-time1-ns": 84,
+		"wait-data-time-ns": 600000,
+		"count": 1,
+		"status": "disabled"
+	},
+
+	"console-uart": {
+		"uart-bus": "uart-16550.0"
+	}
+}

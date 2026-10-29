@@ -634,15 +634,17 @@
 	"regulator-f133-ldo@0x03000150": { "name": "ldob", "channel": 1 },
 
 	"led-gpio:0": {
-		"gpio": 118,
+		"gpio": 133,
 		"gpio-config": 1,
 		"active-low": true,
-		"default-brightness": 0
+		"default-brightness": 0,
+		"status": "disabled"
 	},
 
 	"ledtrigger-heartbeat": {
 		"led-name": "led-gpio.0",
-		"period-ms": 1260
+		"period-ms": 1260,
+		"status": "disabled"
 	},
 
 	"ledstrip-f133@0x02008000": {
@@ -667,7 +669,8 @@
 		"clocks": ["link-tvd", "bus-tvd", "bus-tvd-top", "mbus-tvin"],
 		"resets": [1041, 1040],
 		"interrupt": 123,
-		"channel": 0
+		"channel": 0,
+		"status": "disabled"
 	},
 
 	"ts-f133@0x02009c00": {
@@ -686,7 +689,8 @@
 		"interrupt-gpio": 195,
 		"interrupt-gpio-config": 14,
 		"reset-gpio": 194,
-		"reset-gpio-config": 1
+		"reset-gpio-config": 1,
+		"status": "disabled"
 	},
 
 	"g2d-f133@0x05410000": {
@@ -694,15 +698,15 @@
 		"resets": [80]
 	},
 
-	"fb-f133-rgb@0x05000000": {
+	"fb-f133-i80@0x05000000": {
 		"clock-name-de": "link-de",
 		"clock-name-tconlcd": "link-tconlcd",
 		"reset-de": 16,
 		"reset-tconlcd": 912,
 		"width": 320,
 		"height": 240,
-		"physical-width": 216,
-		"physical-height": 135,
+		"physical-width": 320,
+		"physical-height": 240,
 		"bits-per-pixel": 16,
 		"clock-frequency": 33000000,
 		"hfront-porch": 40,

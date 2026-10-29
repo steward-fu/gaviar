@@ -3,7 +3,7 @@
 
 #include <types.h>
 
-#define F133_TCONLCD_BASE		(0x05461000)
+#define F133_TCONLCD_BASE   0x05461000
 
 struct f133_tconlcd_reg_t {
 	u32_t gctrl;				/* 0x00 */

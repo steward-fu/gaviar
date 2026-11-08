@@ -78,7 +78,6 @@ static void lcd_cfg_panel_info(struct panel_extend_para *info)
 				   + lcd_gamma_tbl[items - 1][1];
 
 	memcpy(info->lcd_cmap_tbl, lcd_cmap_tbl, sizeof(lcd_cmap_tbl));
-
 }
 
 static s32 lcd_open_flow(u32 sel)
@@ -191,14 +190,6 @@ static void lcd_panel_init(u32 sel)
 	sunxi_lcd_cpu_write_index(sel, 0x2c); //memory write
 
 	printk("initialized st7789 lcd panel\n");
-
-{
-    int cc = 0;
-
-    for (cc=0; cc<320*240; cc++) {
-	    sunxi_lcd_cpu_write_data(sel, 0xf800);
-    }
-}
 }
 
 static void lcd_panel_exit(u32 sel)

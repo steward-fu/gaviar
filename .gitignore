@@ -11,3 +11,6 @@ buildroot/output/
 buildroot/..config.tmp
 buildroot/.config
 buildroot/.config.old
+
+xboot/output/
+xboot/src/.obj/

@@ -68,12 +68,12 @@ void dma_cache_sync(void * addr, unsigned long size, int dir)
 	unsigned long start = (unsigned long)addr;
 	unsigned long stop = start + size;
 
-	if(dir == DMA_TO_DEVICE)
+	if(dir == DMA_FROM_DEVICE)
 	{
-		dcache_wb_range(start, stop);
+		cache_inv_range(start, stop);
 	}
 	else
 	{
-		dcache_wbinv_range(start, stop);
+		cache_flush_range(start, stop);
 	}
 }

@@ -11,9 +11,8 @@ extern "C" {
 #include <riscv64.h>
 #include <dma/dma.h>
 
-void dcache_wb_range(unsigned long start, unsigned long end);
-void dcache_inv_range(unsigned long start, unsigned long end);
-void dcache_wbinv_range(unsigned long start, unsigned long end);
+void cache_flush_range(unsigned long start, unsigned long stop);
+void cache_inv_range(unsigned long start, unsigned long stop);
 
 void mmu_setup(void);
 void mmu_enable(void);

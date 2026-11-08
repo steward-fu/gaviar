@@ -109,6 +109,7 @@ _fel:
 
 	/* Initial system jtag, uart and clock */
 	call sys_jtag_init
+	call sys_uart_init
 	call sys_clock_init
 
 	/* Copy ddr bin to 0x00030000 */
@@ -130,6 +131,7 @@ _fel:
 	/* Initial ddr controller */
 	call sys_dram_init
 _avoid:
+	call sys_uart_init
 	nop
 
 	/* Initialize global pointer */
@@ -186,7 +188,6 @@ _avoid:
 _main:
 	call mmu_setup
 	call mmu_enable
-	call sys_uart_init
 	call xboot_main
 	j _main
 

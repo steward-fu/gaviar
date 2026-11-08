@@ -437,7 +437,7 @@
 		"clock-name": "timer1"
 	},
 
-	"uart-16550:0@0x02500000": {
+	"uart-16550@0x02500000": {
 		"clock-name": "bus-uart0",
 		"reset": 432,
 		"txd-gpio": 130,
@@ -450,7 +450,7 @@
 		"stop-bits": 1
 	},
 
-	"uart-16550:1@0x02500400": {
+	"uart-16550@0x02500400": {
 		"clock-name": "bus-uart1",
 		"reset": 433,
 		"txd-gpio": 198,
@@ -463,7 +463,7 @@
 		"stop-bits": 1
 	},
 
-	"uart-16550:2@0x02500800": {
+	"uart-16550@0x02500800": {
 		"clock-name": "bus-uart2",
 		"reset": 434,
 		"txd-gpio": 32,
@@ -476,7 +476,7 @@
 		"stop-bits": 1
 	},
 
-	"uart-16550:3@0x02500c00": {
+	"uart-16550@0x02500c00": {
 		"clock-name": "bus-uart3",
 		"reset": 435,
 		"txd-gpio": 106,
@@ -489,7 +489,7 @@
 		"stop-bits": 1
 	},
 
-	"uart-16550:4@0x02501000": {
+	"uart-16550@0x02501000": {
 		"clock-name": "bus-uart4",
 		"reset": 436,
 		"txd-gpio": 34,
@@ -502,7 +502,7 @@
 		"stop-bits": 1
 	},
 
-	"uart-16550:5@0x02501400": {
+	"uart-16550@0x02501400": {
 		"clock-name": "bus-uart5",
 		"reset": 437,
 		"txd-gpio": 36,
@@ -515,7 +515,7 @@
 		"stop-bits": 1
 	},
 
-	"i2c-f133:0@0x02502000": {
+	"i2c-f133@0x02502000": {
 		"clock-name": "bus-i2c0",
 		"clock-frequency": 400000,
 		"reset": 464,
@@ -525,7 +525,7 @@
 		"scl-gpio-config": -1
 	},
 
-	"i2c-f133:1@0x02502400": {
+	"i2c-f133@0x02502400": {
 		"clock-name": "bus-i2c1",
 		"clock-frequency": 400000,
 		"reset": 465,
@@ -535,7 +535,7 @@
 		"scl-gpio-config": -1
 	},
 
-	"i2c-f133:2@0x02502800": {
+	"i2c-f133@0x02502800": {
 		"clock-name": "bus-i2c2",
 		"clock-frequency": 400000,
 		"reset": 466,
@@ -545,7 +545,7 @@
 		"scl-gpio-config": 2
 	},
 
-	"i2c-f133:3@0x02502c00": {
+	"i2c-f133@0x02502c00": {
 		"clock-name": "bus-i2c3",
 		"clock-frequency": 400000,
 		"reset": 467,
@@ -555,7 +555,7 @@
 		"scl-gpio-config": -1
 	},
 
-	"spi-f133:0@0x04025000": {
+	"spi-f133@0x04025000": {
 		"clock-name": "spi0",
 		"reset": 496,
 		"sclk-gpio": 66,
@@ -568,7 +568,7 @@
 		"cs-gpio-config": 2
 	},
 
-	"spi-f133:1@0x04026000": {
+	"spi-f133@0x04026000": {
 		"clock-name": "spi1",
 		"reset": 497,
 		"sclk-gpio": 107,
@@ -591,7 +591,8 @@
 			{ "name": "xboot",   "offset": 0,       "length": 6291456 },
 			{ "name": "reserve", "offset": 6291456, "length": 2097152 },
 			{ "name": "private", "offset": 8388608, "length": 0 }
-		]
+		],
+		"status": "disabled"
 	},
 
 	"sdhci-f133@0x04020000": {
@@ -634,14 +635,14 @@
 	"regulator-f133-ldo@0x03000150": { "name": "ldob", "channel": 1 },
 
 	"led-gpio:0": {
-		"gpio": 133,
+		"gpio": 118,
 		"gpio-config": 1,
 		"active-low": true,
 		"default-brightness": 0,
 		"status": "disabled"
 	},
 
-	"ledtrigger-heartbeat": {
+    "ledtrigger-heartbeat": {
 		"led-name": "led-gpio.0",
 		"period-ms": 1260,
 		"status": "disabled"
@@ -661,16 +662,7 @@
 		"wait-time0-ns": 84,
 		"wait-time1-ns": 84,
 		"wait-data-time-ns": 600000,
-		"count": 1,
-		"status": "disabled"
-	},
-
-	"cam-f133-tvd@0x05c01000": {
-		"clocks": ["link-tvd", "bus-tvd", "bus-tvd-top", "mbus-tvin"],
-		"resets": [1041, 1040],
-		"interrupt": 123,
-		"channel": 0,
-		"status": "disabled"
+		"count": 1
 	},
 
 	"ts-f133@0x02009c00": {
@@ -693,22 +685,36 @@
 		"status": "disabled"
 	},
 
-	"g2d-f133@0x05410000": {
-		"clocks": ["link-g2d", "bus-g2d", "mbus-g2d"],
-		"resets": [80]
+    "key-gpio-polled:0": {
+		"keys": [
+			{ "gpio": 128, "gpio-config": 0, "active-low": true, "key-code":  2 },
+			{ "gpio": 135, "gpio-config": 0, "active-low": true, "key-code":  3 },
+			{ "gpio": 134, "gpio-config": 0, "active-low": true, "key-code":  4 },
+			{ "gpio": 132, "gpio-config": 0, "active-low": true, "key-code":  5 },
+			{ "gpio": 141, "gpio-config": 0, "active-low": true, "key-code": 65 },
+			{ "gpio": 140, "gpio-config": 0, "active-low": true, "key-code": 66 },
+			{ "gpio": 139, "gpio-config": 0, "active-low": true, "key-code": 88 },
+			{ "gpio": 130, "gpio-config": 0, "active-low": true, "key-code": 89 },
+			{ "gpio": 129, "gpio-config": 0, "active-low": true, "key-code": 76 },
+			{ "gpio": 138, "gpio-config": 0, "active-low": true, "key-code": 82 },
+			{ "gpio": 136, "gpio-config": 0, "active-low": true, "key-code": 11 },
+			{ "gpio": 131, "gpio-config": 0, "active-low": true, "key-code": 12 },
+			{ "gpio": 137, "gpio-config": 0, "active-low": true, "key-code": 13 }
+		],
+		"poll-interval-ms": 100
 	},
 
-	"fb-f133-i80@0x05000000": {
+	"fb-f133-rgb@0x05000000": {
 		"clock-name-de": "link-de",
 		"clock-name-tconlcd": "link-tconlcd",
-		"reset-de": 16,
-		"reset-tconlcd": 912,
+		"reset-de": 44,
+		"reset-tconlcd": 36,
 		"width": 320,
 		"height": 240,
-		"physical-width": 320,
-		"physical-height": 240,
+		"physical-width": 216,
+		"physical-height": 135,
 		"bits-per-pixel": 16,
-		"clock-frequency": 33000000,
+		"clock-frequency": 8000000,
 		"hfront-porch": 40,
 		"hback-porch": 87,
 		"hsync-len": 1,

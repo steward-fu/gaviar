@@ -30,29 +30,26 @@
 
 #define L1_CACHE_BYTES	(64)
 
-void dcache_wb_range(unsigned long start, unsigned long end)
+/*
+ * Flush range(clean & invalidate), affects the range [start, stop - 1]
+ */
+void cache_flush_range(unsigned long start, unsigned long stop)
 {
-	unsigned long i = start & ~(L1_CACHE_BYTES - 1);
+	register unsigned long i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
 
-	for(; i < end; i += L1_CACHE_BYTES)
-		__asm__ __volatile__("dcache.cpa %0\n"::"r"(i):"memory");
-	__asm__ __volatile__("sync.is");
+	for(; i < stop; i += L1_CACHE_BYTES)
+		__asm__ __volatile__(".long 0x0295000b");	/* dcache.cpa a0 */
+	__asm__ __volatile__(".long 0x01b0000b");		/* sync.is */
 }
 
-void dcache_inv_range(unsigned long start, unsigned long end)
+/*
+ * Invalidate range, affects the range [start, stop - 1]
+ */
+void cache_inv_range(unsigned long start, unsigned long stop)
 {
-	unsigned long i = start & ~(L1_CACHE_BYTES - 1);
+	register unsigned long i asm("a0") = start & ~(L1_CACHE_BYTES - 1);
 
-	for(; i < end; i += L1_CACHE_BYTES)
-		__asm__ __volatile__("dcache.ipa %0\n"::"r"(i):"memory");
-	__asm__ __volatile__("sync.is");
-}
-
-void dcache_wbinv_range(unsigned long start, unsigned long end)
-{
-	unsigned long i = start & ~(L1_CACHE_BYTES - 1);
-
-	for(; i < end; i += L1_CACHE_BYTES)
-		__asm__ __volatile__("dcache.cipa %0\n"::"r"(i):"memory");
-	__asm__ __volatile__("sync.is");
+	for(; i < stop; i += L1_CACHE_BYTES)
+		__asm__ __volatile__(".long 0x02a5000b");	/* dcache.ipa a0 */
+	__asm__ __volatile__(".long 0x01b0000b");		/* sync.is */
 }

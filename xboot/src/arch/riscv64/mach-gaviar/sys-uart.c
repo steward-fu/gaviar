@@ -34,25 +34,30 @@ void sys_uart_init(void)
 	u32_t val;
 
 	/* Config GPIOB2 and GPIOB3 to txd4 and rxd4 */
-	addr = 0x02000030;
+	addr = 0x02000030 + 0x0;
 	val = read32(addr);
-	val &= 0xffff00ff;
-	val |= 0x00007700;
+	val &= ~(0xf << ((2 & 0x7) << 2));
+	val |= ((0x7 & 0xf) << ((2 & 0x7) << 2));
 	write32(addr, val);
 
-	/* Open the clock gate for uart4 */
+	val = read32(addr);
+	val &= ~(0xf << ((3 & 0x7) << 2));
+	val |= ((0x7 & 0xf) << ((3 & 0x7) << 2));
+	write32(addr, val);
+
+	/* Open the clock gate for uart0 */
 	addr = 0x0200190c;
 	val = read32(addr);
 	val |= 1 << 4;
 	write32(addr, val);
 
-	/* Deassert uart4 reset */
+	/* Deassert uart0 reset */
 	addr = 0x0200190c;
 	val = read32(addr);
 	val |= 1 << 20;
 	write32(addr, val);
 
-	/* Config uart4 to 115200-8-1-0 */
+	/* Config uart0 to 115200-8-1-0 */
 	addr = 0x02501000;
 	write32(addr + 0x04, 0x0);
 	write32(addr + 0x08, 0xf7);

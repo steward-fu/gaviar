@@ -5,8 +5,9 @@
 extern "C" {
 #endif
 
-#define F133_GPIO_BASE      0x02000000
-#define F133_PD_DAT         0x00a0
+#define F133_GPIO_BASE	    (0x02000000)
+#define F133_GPIOD_DATA	    (0xa0)
+
 #define F133_GPIOB2			(32 + 2)
 #define F133_GPIOB3			(32 + 3)
 #define F133_GPIOB4			(32 + 4)
